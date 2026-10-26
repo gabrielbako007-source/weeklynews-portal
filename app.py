@@ -13,20 +13,17 @@ STORED_NEWS = {
     "AI Tech & Tudomány": []
 }
 
-# Fix hirdetések az Adok-Veszek rovatba
 STORED_CLASSIFIEDS = [
     {"title": "Prémium családi ház eladó", "price": "45 000 000 Ft", "contact": "06301234567", "source": "Kiemelt Partner"},
-    {"title": "Garantáltan bio vitamincsomagok a termelőtől", "price": "8 500 Ft", "contact": "info@biovitamin.hu", "source": "Szponzorált Apró"}
+    {"title": "Garantáltan bio vitamincsomagok a termelőtől", "price": "8 500 Ft", "contact": "info@biavitamin.hu", "source": "Szponzorált Apró"}
 ]
 
-# YouTube partner videók helye
 SPONSOR_VIDEOS = {
     "Belföld": "https://youtube.com",
     "AI Tech & Tudomány": "https://youtube.com"
 }
 
 def translate_text(text, target_lang):
-    """Háttér AI fordító, ami automatikusan magyarít a hazai olvasóknak"""
     if target_lang == "en":
         return text
     try:
@@ -54,8 +51,10 @@ def get_category_and_image(title, index):
         return "Vallás, Hit & Erkölcs", images["vallas"][img_idx]
     elif any(w in t for w in ["család", "gyerek", "iskola", "szülő", "feleség", "férj", "otthon", "egészség", "nevelés", "biztonság", "védelem"]):
         return "Belföld", images["belfold"][img_idx]
-    elif any(w in t for w in ["tech", "ai", "mesterséges", "robot", "tudomány", "okostelefon", "drón", "űr", "kütyü", "tőzsde", "részvény", "wall street", "market", "nasdaq", "dow", "gazdaság"]):
-        return "Gazdaság" if any(x in t for x in ["tőzsde", "market", "részvény", "wall", "bank", "pénz"]) else "AI Tech & Tudomány", images["tech"][img_idx]
+    elif any(w in t for w in ["tech", "ai", "mesterséges", "robot", "tudomány", "okostelefon", "drón", "űr", "kütyü", "internet", "google"]):
+        return "AI Tech & Tudomány", images["tech"][img_idx]
+    elif any(w in t for w in ["gazdaság", "forint", "euró", "pénz", "tőzsde", "részvény", "szankció", "infláció", "hitel", "bank"]):
+        return "Gazdaság", images["gazdasag"][img_idx]
     else:
         return "Külföld", images["kulfold"][img_idx]
 
@@ -64,7 +63,6 @@ def scrape_all_news(lang="hu"):
     categories = {"Belföld": [], "Külföld": [], "Gazdaság": [], "Vallás, Hit & Erkölcs": [], "AI Tech & Tudomány": []}
     count = 0
 
-    # 1. KÜLFÖLDI PREMÍUM FORRÁSOK (New York Times Business & Guardian World)
     global_urls = [
         ("https://nytimes.com", "New York Times"),
         ("https://theguardian.com", "The Guardian")
@@ -85,7 +83,6 @@ def scrape_all_news(lang="hu"):
         except Exception:
             pass
 
-    # 2. HAZAI PRÉMIUM FORRÁSOK (Hetek & NLC)
     local_urls = [
         ("https://hetek.hu", "Hetek Magazin"),
         ("https://nlc.hu", "NLC / Nők Lapja")
@@ -112,7 +109,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE WEEKLY NEWS</title>
+    <title>A HETI HÍREK</title>
     <style>
         :root {
             --bg-color: #edeef0;
@@ -132,7 +129,6 @@ HTML_TEMPLATE = """
             color: var(--text-dark);
         }
 
-        /* MAI GYÖNYÖRŰ KÉKES-PALASZÜRKE HÁTTÉR */
         header { 
             background-color: #334155; 
             padding: 3rem 1rem 1.5rem 1rem; 
@@ -190,7 +186,6 @@ HTML_TEMPLATE = """
             margin-top: 4px;
         }
 
-        /* KÉK CHAT BUBORÉK */
         .logo-twn-bubble {
             background-color: #3ba2ff;
             color: #ffffff;
@@ -243,14 +238,13 @@ HTML_TEMPLATE = """
             text-indent: 12px;
         }
 
-        /* FIXÁLT NAVIGÁCIÓS SÁV, AMI NEM ENGEDI SZÉTESNI A MENÜT */
         .nav-bar {
             background-color: var(--nav-blue);
             padding: 0px 0.5rem;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-wrap: wrap; /* Mobilbarát tördelés, ha nem férne ki */
+            flex-wrap: wrap;
         }
 
         .nav-item {
@@ -259,7 +253,7 @@ HTML_TEMPLATE = """
             font-weight: bold;
             padding: 1.1rem 1.2rem;
             text-decoration: none;
-            font-size: 0.95rem; /* Picit kisebb betű a biztos férőhelyért */
+            font-size: 0.95rem;
             transition: background 0.2s;
             white-space: nowrap;
         }
@@ -290,6 +284,7 @@ HTML_TEMPLATE = """
 
         .rovat-section {
             margin-bottom: 5rem;
+            scroll-margin-top: 20px;
         }
 
         .rovat-title {
@@ -404,7 +399,6 @@ HTML_TEMPLATE = """
             border: 0;
         }
 
-        /* APRÓHIRDETÉS SÁV */
         .classifieds-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -456,21 +450,21 @@ HTML_TEMPLATE = """
     <header>
         <div class="brand-container">
             <div class="logo-row">
-                <div class="logo-the">THE</div>
+                <div class="logo-the">A</div>
                 <div class="logo-right-side">
-                    <div class="logo-weekly">WEEKLY</div>
+                    <div class="logo-weekly">HETI</div>
                     <div class="logo-bottom-row">
                         <div class="logo-twn-bubble">
                             <span class="twn-t">T</span>
                             <span class="twn-w">W</span>
                             <span class="twn-n">N</span>
                         </div>
-                        <div class="logo-news">NEWS</div>
+                        <div class="logo-news">HÍREK</div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="sub-slogan">{{ sub_slogan }}</div>
+        <div class="sub-slogan">HETILAP</div>
     </header>
 
     <div class="nav-bar">
@@ -551,13 +545,13 @@ def index():
     accept_lang = request.headers.get('Accept-Language', '')
     if 'de' in accept_lang:
         lang = 'de'
-        labels = {"sub_slogan": "Wochenzeitung", "refresh_text": "Aktualisieren", "video_title": "Partner-Video", "rovat1": "Inland", "rovat2": "Ausland", "rovat3": "Wirtschaft", "rovat4": "Religion & Moral", "rovat5": "KI Tech", "rovat_ad": "Kleinanzeigen"}
+        labels = {"refresh_text": "Aktualisieren", "video_title": "Partner-Video", "rovat1": "Inland", "rovat2": "Ausland", "rovat3": "Wirtschaft", "rovat4": "Religion & Moral", "rovat5": "KI Tech", "rovat_ad": "Kleinanzeigen"}
     elif 'en' in accept_lang:
         lang = 'en'
-        labels = {"sub_slogan": "Weekly Newspaper", "refresh_text": "Refresh", "video_title": "Partner Video", "rovat1": "National", "rovat2": "International", "rovat3": "Economy", "rovat4": "Religion", "rovat5": "AI Tech", "rovat_ad": "Classifieds"}
+        labels = {"refresh_text": "Refresh", "video_title": "Partner Video", "rovat1": "National", "rovat2": "International", "rovat3": "Economy", "rovat4": "Religion", "rovat5": "AI Tech", "rovat_ad": "Classifieds"}
     else:
         lang = 'hu'
-        labels = {"sub_slogan": "Közéleti Hetilap", "refresh_text": "Frissítés", "video_title": "Ajánlott Partner Videó", "rovat1": "Nemzeti", "rovat2": "Nemzetközi", "rovat3": "Gazdaság", "rovat4": "Vallás és erkölcs", "rovat5": "MI technológia és tudomány", "rovat_ad": "Apróhirdetések (vétel/eladás)"}
+        labels = {"refresh_text": "FRISSÍTÉS MOST", "video_title": "AJÁNLOTT PARTNER VIDEÓ", "rovat1": "Nemzeti", "rovat2": "Nemzetközi", "rovat3": "Gazdaság", "rovat4": "Vallás és erkölcs", "rovat5": "MI technológia és tudomány", "rovat_ad": "Apróhirdetések (vétel/eladás)"}
 
     if not any(STORED_NEWS.values()):
         STORED_NEWS = scrape_all_news(lang)
