@@ -5,7 +5,7 @@ from flask import Flask, render_template_string, redirect, url_for
 
 app = Flask(__name__)
 
-# A kért egyedi rovatstruktúra
+# A kért egyedi, kibővített rovatstruktúra
 STORED_NEWS = {
     "Belföld": [],
     "Külföld": [],
@@ -14,14 +14,21 @@ STORED_NEWS = {
     "AI Tech & Tudomány": []
 }
 
-# JELENLEGI VIDEÓK (Ezt a következő lépésben tesszük számodra külsőleg kezelhetővé)
-SPONSOR_VIDEOS = {
-    "Belföld": "https://youtube.com",
-    "AI Tech & Tudomány": "https://youtube.com"
-}
+# 7 DARAB REKLÁMVIDEÓ TÁRHELYE (Itt cserélheted a YouTube kódokat kényelmesen!)
+REKLAM_VIDEÓK = [
+    "GjrVtUNJTuQ",  # 1. Videó (A fluorokinolon riportfilmed)
+    "GjrVtUNJTuQ",  # 2. Videó tárhely
+    "GjrVtUNJTuQ",  # 3. Videó tárhely
+    "GjrVtUNJTuQ",  # 4. Videó tárhely
+    "GjrVtUNJTuQ",  # 5. Videó tárhely
+    "GjrVtUNJTuQ",  # 6. Videó tárhely
+    "GjrVtUNJTuQ"   # 7. Videó tárhely
+]
 
 def get_category_and_image(title, index):
     t = title.lower()
+    
+    # BOMBABIZTOS, VALÓDI KÉPEK A ROVATOKHOZ (Így már nem lesz törött kép!)
     images = {
         "vallas": ["https://unsplash.com", "https://unsplash.com"],
         "tech": ["https://unsplash.com", "https://unsplash.com"],
@@ -30,14 +37,14 @@ def get_category_and_image(title, index):
         "kulfold": ["https://unsplash.com", "https://unsplash.com"]
     }
     img_idx = index % 2
-
-    if any(w in t for w in ["templom", "vallás", "hit ", "hitélet", "pápa", "egyház", "isten", "biblia", "izrael", "zsidó", "keresztény", "erkölcs"]):
+    
+    if any(w in t for w in ["templom", "vallás", "hit", "hitélet", "pápa", "egyház", "isten", "biblia", "izrael", "zsidó", "keresztény", "erkölcs", "hetek", "vatican"]):
         return "Vallás, Hit & Erkölcs", images["vallas"][img_idx]
-    elif any(w in t for w in ["tech", "ai", "mesterséges", "robot", "tudomány", "okostelefon", "drón", "űr", "kütyü", "internet", "google"]):
+    elif any(w in t for w in ["tech", "ai", "mesterséges", "robot", "tudomány", "okostelefon", "drón", "űr", "kütyü", "internet", "google", "times", "nasa"]):
         return "AI Tech & Tudomány", images["tech"][img_idx]
-    elif any(w in t for w in ["gazdaság", "forint", "euró", "pénz", "tőzsde", "részvény", "szankció", "infláció", "hitel", "bank"]):
+    elif any(w in t for w in ["gazdaság", "forint", "euró", "pénz", "tőzsde", "részvény", "szankció", "infláció", "hitel", "bank", "dollár"]):
         return "Gazdaság", images["gazdasag"][img_idx]
-    elif any(w in t for w in ["fidesz", "orbán", "kormány", "belföld", "budapest", "parlament", "magyar"]):
+    elif any(w in t for w in ["fidesz", "orbán", "kormány", "belföld", "budapest", "parlament", "magyar", "café", "nlc"]):
         return "Belföld", images["belfold"][img_idx]
     else:
         return "Külföld", images["kulfold"][img_idx]
@@ -46,6 +53,8 @@ def scrape_all_news():
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     categories = {"Belföld": [], "Külföld": [], "Gazdaság": [], "Vallás, Hit & Erkölcs": [], "AI Tech & Tudomány": []}
     count = 0
+    
+    # 1. FORRÁS: Hírkereső alapgyűjtés
     try:
         res = requests.get("https://hirkereso.hu", headers=headers, timeout=10)
         if res.status_code == 200:
@@ -57,14 +66,21 @@ def scrape_all_news():
                     cat, img = get_category_and_image(title, count)
                     categories[cat].append({"title": title, "link": href, "image": img, "source": "Hírkereső"})
                     count += 1
-                if count >= 30: break
+                if count >= 20: break
     except Exception as e:
-        print(f"Hiba: {e}")
+        print(f"Hírkereső hiba: {e}")
 
-    international_urls = ["https://bbci.co.uk", "https://bbci.co.uk"]
-    for url in international_urls:
+    # 2. FORRÁS: Nők Lapja Café & Hetek & New York Times integráció RSS hírcsatornákon keresztül
+    uj_forrasok = [
+        {"url": "https://nlc.hu", "name": "Nők Lapja Café"},
+        {"url": "https://hetek.hu", "name": "Hetek Magazin"},
+        {"url": "https://nytimes.com", "name": "New York Times"},
+        {"url": "https://nytimes.com", "name": "NYT Science"}
+    ]
+    
+    for forras in uj_forrasok:
         try:
-            res = requests.get(url, headers=headers, timeout=10)
+            res = requests.get(forras["url"], headers=headers, timeout=10)
             if res.status_code == 200:
                 soup = BeautifulSoup(res.content, "xml")
                 for item in soup.find_all("item"):
@@ -72,12 +88,13 @@ def scrape_all_news():
                     link = item.link.get_text(strip=True) if item.link else ""
                     if title and link:
                         cat, img = get_category_and_image(title, count)
-                        source_name = "BBC News" if "bbc" in url else "CNN"
-                        categories[cat].append({"title": f"[NEMZETKÖZI] {title}", "link": link, "image": img, "source": source_name})
+                        display_title = f"[{forras['name'].upper()}] {title}" if "Times" in forras["name"] else title
+                        categories[cat].append({"title": display_title, "link": link, "image": img, "source": forras["name"]})
                         count += 1
-                    if count >= 50: break
+                    if count >= 60: break
         except Exception as e:
-            print(f"Hiba: {e}")
+            print(f"Hiba a(z) {forras['name']} betöltésekor: {e}")
+            
     return categories
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -103,15 +120,12 @@ HTML_TEMPLATE = """
             background-color: var(--bg-color); 
             color: var(--text-dark);
         }
-
-        /* PRÉMIUM KÉKES-PALASZÜRKE FEJLÉC HÁTTÉR */
         header { 
             background-color: #334155; 
             padding: 3rem 1rem 1.5rem 1rem; 
             text-align: center;
             border-bottom: 1px solid var(--border-gray);
         }
-
         .brand-container {
             display: inline-block;
             border-top: 1.5px solid #ffffff;
@@ -119,14 +133,12 @@ HTML_TEMPLATE = """
             padding: 0.6rem 2.5rem;
             margin-bottom: 0.5rem;
         }
-
         .logo-row {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
         }
-
         .logo-the {
             font-size: 4.8rem;
             font-weight: bold;
@@ -138,13 +150,11 @@ HTML_TEMPLATE = """
             border-right: 1.5px solid #ffffff;
             padding-right: 15px;
         }
-
         .logo-right-side {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
         }
-
         .logo-weekly {
             font-size: 2.2rem;
             font-weight: 900;
@@ -154,15 +164,12 @@ HTML_TEMPLATE = """
             -webkit-text-stroke: 1px #ffffff;
             line-height: 0.9;
         }
-
         .logo-bottom-row {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-top: 4px;
         }
-
-        /* ÉLÉNK KÉK CHAT BUBORÉK */
         .logo-twn-bubble {
             background-color: #3ba2ff;
             color: #ffffff;
@@ -178,7 +185,6 @@ HTML_TEMPLATE = """
             align-items: center;
             justify-content: center;
         }
-
         .logo-twn-bubble::after {
             content: '';
             position: absolute;
@@ -190,11 +196,9 @@ HTML_TEMPLATE = """
             display: block;
             width: 0;
         }
-
         .twn-t { color: #f39c12; }
         .twn-w { color: #ffffff; }
         .twn-n { color: #f39c12; }
-
         .logo-news {
             font-size: 2.6rem;
             font-weight: 900;
@@ -203,7 +207,6 @@ HTML_TEMPLATE = """
             letter-spacing: 0.5px;
             line-height: 0.9;
         }
-
         .sub-slogan {
             font-size: 1rem;
             letter-spacing: 12px;
@@ -214,7 +217,6 @@ HTML_TEMPLATE = """
             font-family: sans-serif;
             text-indent: 12px;
         }
-
         .nav-bar {
             background-color: var(--nav-blue);
             padding: 0px 1rem;
@@ -222,7 +224,6 @@ HTML_TEMPLATE = """
             justify-content: center;
             overflow-x: auto;
         }
-
         .nav-item {
             color: white;
             font-family: sans-serif;
@@ -232,11 +233,9 @@ HTML_TEMPLATE = """
             font-size: 1.05rem;
             transition: background 0.2s;
         }
-
         .nav-item:hover {
             background-color: rgba(255,255,255,0.1);
         }
-
         .btn-refresh {
             background-color: var(--accent-red);
             color: white;
@@ -249,17 +248,14 @@ HTML_TEMPLATE = """
             letter-spacing: 1px;
             text-decoration: none;
         }
-
         .container { 
             max-width: 1300px; 
             margin: 3rem auto; 
             padding: 0 1.5rem; 
         }
-
         .rovat-section {
             margin-bottom: 5rem;
         }
-
         .rovat-title {
             font-family: sans-serif;
             font-size: 1.8rem;
@@ -270,23 +266,19 @@ HTML_TEMPLATE = """
             margin-bottom: 2rem;
             text-transform: uppercase;
         }
-
         .magazine-layout {
             display: grid;
-            grid-template-columns: 3fr 1fr;
+            grid-template-columns: 3fr 1.2fr;
             gap: 2rem;
         }
-
         @media (max-width: 1024px) {
             .magazine-layout { grid-template-columns: 1fr; }
         }
-
         .news-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1.5rem;
         }
-
         .news-card { 
             background: var(--card-bg); 
             border: 1px solid var(--border-gray);
@@ -295,25 +287,21 @@ HTML_TEMPLATE = """
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-
         .news-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-
         .news-card img {
             width: 100%;
             height: 160px;
             object-fit: cover;
         }
-
         .card-body {
             padding: 1.2rem;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
         }
-
         .source-badge {
             font-family: sans-serif;
             font-size: 0.75rem;
@@ -322,7 +310,6 @@ HTML_TEMPLATE = """
             text-transform: uppercase;
             margin-bottom: 0.5rem;
         }
-
         .card-body a { 
             color: var(--text-dark); 
             text-decoration: none; 
@@ -330,38 +317,51 @@ HTML_TEMPLATE = """
             font-weight: bold; 
             line-height: 1.3;
         }
-
         .card-body a:hover { 
             color: var(--nav-blue);
             text-decoration: underline;
         }
-
+        .sidebar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .magazin-box {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .magazin-box img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
         .video-ad-box {
             background: #ffffff;
-            border: 2px solid var(--nav-blue);
-            padding: 1rem;
-            align-self: start;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-gray);
+            border-radius: 4px;
+            padding: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-
         .video-ad-box h4 {
-            margin: 0 0 0.8rem 0;
+            margin: 0 0 0.6rem 0;
             font-family: sans-serif;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             color: var(--accent-red);
             letter-spacing: 1px;
             border-bottom: 1px solid var(--border-gray);
-            padding-bottom: 0.3rem;
+            padding-bottom: 0.2rem;
+            font-weight: bold;
         }
-
         .video-container {
             position: relative;
             padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
+            border-radius: 2px;
         }
-
         .video-container iframe {
             position: absolute;
             top: 0;
@@ -372,8 +372,10 @@ HTML_TEMPLATE = """
         }
     </style>
 </head>
+"""
+# A HTML SABLON BEFEJEZŐ RÉSZE A DINAMIKUS ELRENDEZÉSSEL ÉS A 7 VIDEÓHELLYEL
+HTML_TEMPLATE += """
 <body>
-
     <header>
         <div class="brand-container">
             <div class="logo-row">
@@ -393,7 +395,7 @@ HTML_TEMPLATE = """
         </div>
         <div class="sub-slogan">Közéleti Hetilap</div>
     </header>
-
+    
     <div class="nav-bar">
         <a href="/frissites" class="btn-refresh">🔄 Frissítés</a>
         <a href="#belfold" class="nav-item">Belföld</a>
@@ -411,10 +413,11 @@ HTML_TEMPLATE = """
                     <div class="rovat-title">{{ rovat }}</div>
                     
                     <div class="magazine-layout">
+                        <!-- BAL OLDAL: A cikkek rácsa -->
                         <div class="news-grid">
                             {% for item in cikkek %}
                                 <div class="news-card">
-                                    <img src="{{ item.image }}" alt="Magazin">
+                                    <img src="{{ item.image }}" alt="Hír kép">
                                     <div class="card-body">
                                         <div class="source-badge">🔴 {{ item.source }}</div>
                                         <a href="{{ item.link }}" target="_blank">{{ item.title }}</a>
@@ -422,37 +425,35 @@ HTML_TEMPLATE = """
                                 </div>
                             {% endfor %}
                         </div>
+                        
+                        <!-- JOBB OLDALSÁV: Felül a borító, alatta a 7 darab reklámvideóhely -->
+                        <div class="sidebar-container">
+                            
+                            <!-- KÓDMENTES CSERÉLHETŐ MAGAZINBORÍTÓ (A GitHub gyökérmappából tölt be) -->
+                            <div class="magazin-box">
+                                <img src="/friss_magazin.jpg" alt="Aktuális Heti Borító">
+                            </div>
 
-                  <div class="sidebar-magazin-block" style="width: 100%; margin-bottom: 25px; font-family: sans-serif;">
-    
-    <!-- 1. HETI SZÍNES BORÍTÓKÉP (Amit mappa-szinten, kód nélkül cserélsz) -->
-    <div style="margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <img src="/friss_magazin.jpg" alt="Aktuális Borító" style="width: 100%; height: auto; display: block;">
+                            <!-- A 7 DARAB AUTOMATIKUSAN INDULÓ YOUTUBE REKLÁM HELYE -->
+                            {% for vid_id in reklam_videok %}
+                            <div class="video-ad-box">
+                                <h4>🚨 AJÁNLOTT PARTNER VIDEÓ {{ loop.index }}</h4>
+                                <div class="video-container">
+                                    <iframe 
+                                        src="https://youtube.com{{ vid_id }}?autoplay=1&mute=1&loop=1&playlist={{ vid_id }}" 
+                                        allow="autoplay; encrypted-media" 
+                                        allowfullscreen>
+                                    </iframe>
+                                </div>
+                            </div>
+                            {% endfor %}
 
-
-    <!-- 2. REKLÁMVIDEÓ: Közvetlenül alatta némítva, magától indul -->
-    <div style="border: 1px solid #e0e0e0; padding: 8px; background: #fafafa; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-        <h4 style="color: #ff0000; font-size: 11px; text-align: center; letter-spacing: 1px; margin: 5px 0 8px 0; font-weight: bold;">🚨 AJÁNLOTT PARTNER VIDEÓ</h4>
-        <iframe 
-            width="100%" 
-            height="180" 
-            src="https://youtube.com" 
-            frameborder="0" 
-            allow="autoplay; encrypted-media" 
-            allowfullscreen
-            style="border-radius: 2px;">
-        </iframe>
-    </div>
-
-</div>
-
+                        </div>
                     </div>
-
                 </div>
             {% endif %}
         {% endfor %}
     </div>
-
 </body>
 </html>
 """
@@ -462,7 +463,7 @@ def index():
     global STORED_NEWS
     if not any(STORED_NEWS.values()):
         STORED_NEWS = scrape_all_news()
-    return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, sponsor_videos=SPONSOR_VIDEOS)
+    return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, reklam_videok=REKLAM_VIDEÓK)
 
 @app.route("/frissites")
 def refresh():
