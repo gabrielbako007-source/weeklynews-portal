@@ -143,83 +143,105 @@ HTML_TEMPLATE = """
             width: 100%;
         }
         
-        /* A LOGÓDIZÁJN HAJSZÁLPONTOS REKREÁCIÓJA VÉKONY, DE IGAZÍTOTT BETŰKKEL */
+        /* ==========================================================================
+   146-201 SORIG: A LOGÓDIZÁJN HAJSZÁLPONTOS REKREÁCIÓJA AZ EREDETI ALAPJÁN
+   ========================================================================== */
+
+@import url('https://googleapis.com');
+
 .logo-box-html {
-    background-color: #e2e8f0;
-    padding: 25px 40px;
-    border-top: 1px solid #111111;    /* SZIGORÚAN VÉKONY FELSŐ CSÍK */
-    border-bottom: 1px solid #111111; /* SZIGORÚAN VÉKONY ALSÓ CSÍK */
+    background-color: transparent; /* Így átlátszó vagy bármilyen alapon tökéletes */
+    padding: 6px 0;
+    border-top: 1px solid #1a1a1a;    /* HAJSZÁLVÉKONY FELSŐ CSÍK */
+    border-bottom: 1px solid #1a1a1a; /* HAJSZÁLVÉKONY ALSÓ CSÍK */
     display: inline-flex;
-    align-items: center;
-    gap: 20px;
-    font-family: 'Times New Roman', Times, serif;
+    align-items: stretch;
+    font-family: 'Bodoni Moda', serif;
     position: relative;
 }
+
 .logo-text-the {
-    font-size: 5.6rem;
-    font-weight: normal;
-    color: #1e293b;
-    line-height: 0.8;
-    letter-spacing: -2px;
-    border-right: 2px solid #475569;
-    padding-right: 20px;
-    transform: scaleY(1.05);
+    font-size: 78px;
+    font-weight: 400;
+    color: #1a1a1a;
+    line-height: 0.85;
+    letter-spacing: -3px;
+    padding-right: 14px;
+    display: flex;
+    align-items: center;
+    /* NINCS TÖBBÉ FÜGGŐLEGES ELVÁLASZTÓ VONAL */
 }
+
 .logo-right-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    width: 250px; /* EGY HAJSZÁLLAL KISEBB SZÉLESSÉG A TÖKÉLETES SÍKHOZ */
+    justify-content: space-between;
+    width: 215px; /* FIX SZÉLESSÉG, HOGY A WEEKLY ÉS A NEWS SÍKBAN VEGZŐDJÖN */
+    padding-left: 2px;
 }
+
 .logo-text-weekly {
-    font-size: 2.3rem;
-    font-weight: 900;
-    font-family: 'Arial Black', sans-serif;
-    letter-spacing: 5px; /* FINOMÍTOTT SZÉLESSÉGÜ BETŰKÖZ */
-    color: #e2e8f0;
-    -webkit-text-stroke: 1px #1e293b; /* VÉKONYABB KÖRVONAL, HOGY NE LEGYEN KÖVÉR */
-    line-height: 0.9;
+    font-family: 'Bodoni Moda', serif;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: transparent;
+    -webkit-text-stroke: 1px #1a1a1a; /* HAJSZÁLVÉKONY KÖRVONAL */
+    line-height: 0.95;
     text-transform: uppercase;
     width: 100%;
 }
+
 .logo-bottom-row-wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    margin-top: 4px;
+    margin-top: auto;
 }
+
 .logo-twn-badge {
-    background-color: #3ba2ff;
-    padding: 3px 12px;
-    border-radius: 6px;
+    background-color: #2ea6f2; /* AZ EREDETI ÉLÉNK KÉK */
+    padding: 1px 7px;
+    border-radius: 5px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    font-family: 'Bodoni Moda', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1;
 }
+
 .logo-twn-badge::after {
     content: '';
     position: absolute;
-    bottom: -7px;
+    bottom: -6px;
     left: 12px;
     width: 0;
     height: 0;
-    border-width: 7px 7px 0 0;
+    border-width: 6px 6px 0 0;
     border-style: solid;
-    border-color: #3ba2ff transparent transparent transparent;
+    border-color: #2ea6f2 transparent transparent transparent;
 }
+
+/* Egyedi betűszínek a buborékon belül az eredeti szerint */
+.logo-twn-badge span:nth-child(1) { color: #1a1a1a; } /* T = Fekete */
+.logo-twn-badge span:nth-child(2) { color: #ffffff; } /* W = Fehér */
+.logo-twn-badge span:nth-child(3) { color: #e62129; } /* N = Piros */
+
 .logo-text-news {
-    font-size: 3.1rem;
-    font-weight: 900;
-    font-family: 'Arial Black', 'Impact', sans-serif;
-    color: #ff2a2a;
-    line-height: 0.8;
-    letter-spacing: -0.5px;
+    font-family: 'Oswald', sans-serif; /* NYÚJTOTT, MODERN, VASTAG BETŰTÍPUS */
+    font-size: 38px;
+    font-weight: 700;
+    color: #e62129; /* AZ EREDETI DESIGN PIROS SZÍNE */
+    line-height: 0.9;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
 }
+
 
         .nav-bar { background-color: var(--nav-blue); padding: 0px 1rem; display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-gray); }
         .nav-item { color: white; font-family: sans-serif; font-weight: bold; padding: 1.1rem 1.5rem; text-decoration: none; font-size: 1.05rem; }
