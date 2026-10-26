@@ -427,8 +427,8 @@ HTML_TEMPLATE = """
     
     <!-- 1. HETI SZÍNES BORÍTÓKÉP (Amit mappa-szinten, kód nélkül cserélsz) -->
     <div style="margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <img src="/static/friss_magazin.jpg" alt="Aktuális Borító" style="width: 100%; height: auto; display: block;">
-    </div>
+        <img src="/friss_magazin.jpg" alt="Aktuális Borító" style="width: 100%; height: auto; display: block;">
+
 
     <!-- 2. REKLÁMVIDEÓ: Közvetlenül alatta némítva, magától indul -->
     <div style="border: 1px solid #e0e0e0; padding: 8px; background: #fafafa; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
