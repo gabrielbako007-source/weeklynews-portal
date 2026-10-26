@@ -16,8 +16,8 @@ STORED_NEWS = {
 
 # JELENLEGI VIDEÓK (Ezt a következő lépésben tesszük számodra külsőleg kezelhetővé)
 SPONSOR_VIDEOS = {
-    "Belföld": "https://youtube.com",
-    "AI Tech & Tudomány": "https://youtube.com"
+    "Belföld": "0dc0cfd6-b27e-4b44-a727-7406aba02705",
+    "AI Tech & Tudomány": "0dc0cfd6-b27e-4b44-a727-7406aba02705"
 }
 
 def get_category_and_image(title, index):
