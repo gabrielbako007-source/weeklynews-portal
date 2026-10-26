@@ -143,12 +143,12 @@ HTML_TEMPLATE = """
             width: 100%;
         }
         
-        /* A LOGÓDIZÁJN CSS REKREÁCIÓJA HAJSZÁLPONTOSAN A KÉPED ALAPJÁN (BOMBABIZTOS, NINCS 404!) */
+        /* A LOGÓDIZÁJN HAJSZÁLPONTOS REKREÁCIÓJA VÉKONY, DE IGAZÍTOTT BETŰKKEL */
 .logo-box-html {
     background-color: #e2e8f0;
-    padding: 20px 40px;
-    border-top: 2px solid #111111;
-    border-bottom: 2px solid #111111;
+    padding: 25px 40px;
+    border-top: 1px solid #111111;    /* SZIGORÚAN VÉKONY FELSŐ CSÍK */
+    border-bottom: 1px solid #111111; /* SZIGORÚAN VÉKONY ALSÓ CSÍK */
     display: inline-flex;
     align-items: center;
     gap: 20px;
@@ -156,66 +156,68 @@ HTML_TEMPLATE = """
     position: relative;
 }
 .logo-text-the {
-    font-size: 5.5rem;
+    font-size: 5.6rem;
     font-weight: normal;
     color: #1e293b;
     line-height: 0.8;
     letter-spacing: -2px;
     border-right: 2px solid #475569;
-    padding-right: 25px;
+    padding-right: 20px;
     transform: scaleY(1.05);
 }
 .logo-right-wrapper {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: 2px;
+    width: 250px; /* EGY HAJSZÁLLAL KISEBB SZÉLESSÉG A TÖKÉLETES SÍKHOZ */
 }
 .logo-text-weekly {
-    font-size: 2.5rem;
+    font-size: 2.3rem;
     font-weight: 900;
     font-family: 'Arial Black', sans-serif;
-    letter-spacing: 3px;
+    letter-spacing: 5px; /* FINOMÍTOTT SZÉLESSÉGÜ BETŰKÖZ */
     color: #e2e8f0;
-    -webkit-text-stroke: 1.5px #1e293b;
+    -webkit-text-stroke: 1px #1e293b; /* VÉKONYABB KÖRVONAL, HOGY NE LEGYEN KÖVÉR */
     line-height: 0.9;
     text-transform: uppercase;
+    width: 100%;
 }
 .logo-bottom-row-wrapper {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-top: 2px;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 4px;
 }
 .logo-twn-badge {
     background-color: #3ba2ff;
-    padding: 4px 14px;
+    padding: 3px 12px;
     border-radius: 6px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     position: relative;
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
-/* A KÉK BUBORÉK KIS ALSÓ NYILA (PONTOSAN MINT A KÉPEDEN) */
 .logo-twn-badge::after {
     content: '';
     position: absolute;
-    bottom: -8px;
-    left: 15px;
+    bottom: -7px;
+    left: 12px;
     width: 0;
     height: 0;
-    border-width: 8px 8px 0 0;
+    border-width: 7px 7px 0 0;
     border-style: solid;
     border-color: #3ba2ff transparent transparent transparent;
 }
 .logo-text-news {
-    font-size: 3rem;
+    font-size: 3.1rem;
     font-weight: 900;
     font-family: 'Arial Black', 'Impact', sans-serif;
     color: #ff2a2a;
     line-height: 0.8;
-    letter-spacing: 0.5px;
+    letter-spacing: -0.5px;
     text-transform: uppercase;
 }
 
