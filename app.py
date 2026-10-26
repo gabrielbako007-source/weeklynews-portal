@@ -5,6 +5,7 @@ from flask import Flask, render_template_string, redirect, url_for
 
 app = Flask(__name__)
 
+# A kért egyedi rovatstruktúra
 STORED_NEWS = {
     "Belföld": [],
     "Külföld": [],
@@ -13,6 +14,7 @@ STORED_NEWS = {
     "AI Tech & Tudomány": []
 }
 
+# JELENLEGI VIDEÓK (Ezt a következő lépésben tesszük számodra külsőleg kezelhetővé)
 SPONSOR_VIDEOS = {
     "Belföld": "https://youtube.com",
     "AI Tech & Tudomány": "https://youtube.com"
@@ -102,16 +104,18 @@ HTML_TEMPLATE = """
             color: var(--text-dark);
         }
 
+        /* PRÉMIUM KÉKES-PALASZÜRKE FEJLÉC HÁTTÉR */
         header { 
-            background-color: #ffffff; 
+            background-color: #334155; 
             padding: 3rem 1rem 1.5rem 1rem; 
             text-align: center;
+            border-bottom: 1px solid var(--border-gray);
         }
 
         .brand-container {
             display: inline-block;
-            border-top: 1.5px solid #111111;
-            border-bottom: 1.5px solid #111111;
+            border-top: 1.5px solid #ffffff;
+            border-bottom: 1.5px solid #ffffff;
             padding: 0.6rem 2.5rem;
             margin-bottom: 0.5rem;
         }
@@ -127,11 +131,11 @@ HTML_TEMPLATE = """
             font-size: 4.8rem;
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
-            color: #2c3e50;
+            color: #ffffff;
             line-height: 0.75;
             letter-spacing: -3px;
             transform: scaleY(1.1);
-            border-right: 1.5px solid #111111;
+            border-right: 1.5px solid #ffffff;
             padding-right: 15px;
         }
 
@@ -147,9 +151,49 @@ HTML_TEMPLATE = """
             font-family: 'Arial Black', Gadget, sans-serif;
             letter-spacing: 2px;
             color: transparent;
-            -webkit-text-stroke: 1px #2c3e50;
+            -webkit-text-stroke: 1px #ffffff;
             line-height: 0.9;
         }
+
+        .logo-bottom-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        /* ÉLÉNK KÉK CHAT BUBORÉK */
+        .logo-twn-bubble {
+            background-color: #3ba2ff;
+            color: #ffffff;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-style: italic;
+            padding: 2px 10px;
+            border-radius: 6px;
+            position: relative;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-twn-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 25%;
+            border-width: 6px 6px 0;
+            border-style: solid;
+            border-color: #3ba2ff transparent;
+            display: block;
+            width: 0;
+        }
+
+        .twn-t { color: #f39c12; }
+        .twn-w { color: #ffffff; }
+        .twn-n { color: #f39c12; }
 
         .logo-news {
             font-size: 2.6rem;
@@ -158,7 +202,6 @@ HTML_TEMPLATE = """
             color: var(--accent-red);
             letter-spacing: 0.5px;
             line-height: 0.9;
-            margin-top: 2px;
         }
 
         .sub-slogan {
@@ -167,7 +210,7 @@ HTML_TEMPLATE = """
             text-transform: uppercase;
             font-weight: bold;
             margin-top: 0.8rem;
-            color: #555555;
+            color: #cbd5e1;
             font-family: sans-serif;
             text-indent: 12px;
         }
@@ -337,7 +380,14 @@ HTML_TEMPLATE = """
                 <div class="logo-the">THE</div>
                 <div class="logo-right-side">
                     <div class="logo-weekly">WEEKLY</div>
-                    <div class="logo-news">NEWS</div>
+                    <div class="logo-bottom-row">
+                        <div class="logo-twn-bubble">
+                            <span class="twn-t">T</span>
+                            <span class="twn-w">W</span>
+                            <span class="twn-n">N</span>
+                        </div>
+                        <div class="logo-news">NEWS</div>
+                    </div>
                 </div>
             </div>
         </div>
