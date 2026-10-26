@@ -144,62 +144,80 @@ HTML_TEMPLATE = """
         }
         
         /* A LOGÓDIZÁJN CSS REKREÁCIÓJA HAJSZÁLPONTOSAN A KÉPED ALAPJÁN (BOMBABIZTOS, NINCS 404!) */
-        .logo-box-html {
-            background-color: #e2e8f0;
-            padding: 10px 30px;
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
-            display: inline-flex;
-            align-items: center;
-            gap: 15px;
-            font-family: 'Times New Roman', Times, serif;
-        }
-        .logo-text-the {
-            font-size: 4.2rem;
-            font-weight: bold;
-            color: #2c3e50;
-            line-height: 0.8;
-            letter-spacing: -2px;
-            border-right: 2px solid #2c3e50;
-            padding-right: 15px;
-        }
-        .logo-right-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .logo-text-weekly {
-            font-size: 1.8rem;
-            font-weight: bold;
-            letter-spacing: 3px;
-            color: #2c3e50;
-            line-height: 1;
-            margin-bottom: 2px;
-        }
-        .logo-bottom-row-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .logo-twn-badge {
-            background-color: #3ba2ff;
-            color: #ffffff;
-            font-weight: bold;
-            font-style: italic;
-            font-size: 1.05rem;
-            padding: 2px 10px;
-            border-radius: 4px;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .logo-text-news {
-            font-size: 2.2rem;
-            font-weight: 900;
-            font-family: 'Impact', sans-serif;
-            color: var(--accent-red);
-            line-height: 1;
-            letter-spacing: 1px;
-        }
+.logo-box-html {
+    background-color: #e2e8f0;
+    padding: 20px 40px;
+    border-top: 2px solid #111111;
+    border-bottom: 2px solid #111111;
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    font-family: 'Times New Roman', Times, serif;
+    position: relative;
+}
+.logo-text-the {
+    font-size: 5.5rem;
+    font-weight: normal;
+    color: #1e293b;
+    line-height: 0.8;
+    letter-spacing: -2px;
+    border-right: 2px solid #475569;
+    padding-right: 25px;
+    transform: scaleY(1.05);
+}
+.logo-right-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+.logo-text-weekly {
+    font-size: 2.5rem;
+    font-weight: 900;
+    font-family: 'Arial Black', sans-serif;
+    letter-spacing: 3px;
+    color: #e2e8f0;
+    -webkit-text-stroke: 1.5px #1e293b;
+    line-height: 0.9;
+    text-transform: uppercase;
+}
+.logo-bottom-row-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 2px;
+}
+.logo-twn-badge {
+    background-color: #3ba2ff;
+    padding: 4px 14px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+/* A KÉK BUBORÉK KIS ALSÓ NYILA (PONTOSAN MINT A KÉPEDEN) */
+.logo-twn-badge::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 15px;
+    width: 0;
+    height: 0;
+    border-width: 8px 8px 0 0;
+    border-style: solid;
+    border-color: #3ba2ff transparent transparent transparent;
+}
+.logo-text-news {
+    font-size: 3rem;
+    font-weight: 900;
+    font-family: 'Arial Black', 'Impact', sans-serif;
+    color: #ff2a2a;
+    line-height: 0.8;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
 
         .nav-bar { background-color: var(--nav-blue); padding: 0px 1rem; display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-gray); }
         .nav-item { color: white; font-family: sans-serif; font-weight: bold; padding: 1.1rem 1.5rem; text-decoration: none; font-size: 1.05rem; }
