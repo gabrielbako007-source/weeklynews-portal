@@ -1,10 +1,11 @@
 import os
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, render_template_string, redirect, url_for, request
+from flask import Flask, render_template_string, redirect, url_for
 
 app = Flask(__name__)
 
+# A kért egyedi rovatstruktúra
 STORED_NEWS = {
     "Belföld": [],
     "Külföld": [],
@@ -13,98 +14,74 @@ STORED_NEWS = {
     "AI Tech & Tudomány": []
 }
 
-# ALAPÉRTELMEZETT REKLÁMOK ÉS HIRDETÉSEK (Ezeket fogja felülírni a PC-s kérdőíved)
+# JELENLEGI VIDEÓK (Ezt a következő lépésben tesszük számodra külsőleg kezelhetővé)
 SPONSOR_VIDEOS = {
     "Belföld": "https://youtube.com",
     "AI Tech & Tudomány": "https://youtube.com"
 }
 
-STORED_CLASSIFIEDS = [
-    {"title": "Prémium családi ház eladó", "price": "45 000 000 Ft", "contact": "06301234567", "source": "Kiemelt Partner hirdetés"},
-    {"title": "Garantáltan bio vitamincsomagok közvetlenül a termelőtől", "price": "8 500 Ft", "contact": "info@biovitamincsapat.hu", "source": "Szponzorált Apró"}
-]
-
-def translate_text(text, target_lang):
-    if target_lang == "en":
-        return text
-    try:
-        url = f"https://googleapis.com{target_lang}&dt=t&q={requests.utils.quote(text)}"
-        res = requests.get(url, timeout=5)
-        if res.status_code == 200:
-            result = res.json()
-            return "".join([sentence for sentence in result if sentence])
-    except Exception:
-        pass
-    return text
-
 def get_category_and_image(title, index):
     t = title.lower()
     images = {
-        "vallas": ["https://picsum.photos", "https://picsum.photos"],
-        "tech": ["https://picsum.photos", "https://picsum.photos"],
-        "gazdasag": ["https://picsum.photos", "https://picsum.photos"],
-        "belfold": ["https://picsum.photos", "https://picsum.photos"],
-        "kulfold": ["https://picsum.photos", "https://picsum.photos"]
+        "vallas": ["https://unsplash.com", "https://unsplash.com"],
+        "tech": ["https://unsplash.com", "https://unsplash.com"],
+        "gazdasag": ["https://unsplash.com", "https://unsplash.com"],
+        "belfold": ["https://unsplash.com", "https://unsplash.com"],
+        "kulfold": ["https://unsplash.com", "https://unsplash.com"]
     }
     img_idx = index % 2
 
-    if any(w in t for w in ["templom", "vallás", "hit ", "hitélet", "pápa", "egyház", "isten", "biblia", "izrael", "zsidó", "keresztény", "erkölcs", "morál"]):
+    if any(w in t for w in ["templom", "vallás", "hit ", "hitélet", "pápa", "egyház", "isten", "biblia", "izrael", "zsidó", "keresztény", "erkölcs"]):
         return "Vallás, Hit & Erkölcs", images["vallas"][img_idx]
-    elif any(w in t for w in ["család", "gyerek", "iskola", "szülő", "feleség", "férj", "otthon", "egészség", "nevelés", "biztonság", "védelem"]):
+    elif any(w in t for w in ["tech", "ai", "mesterséges", "robot", "tudomány", "okostelefon", "drón", "űr", "kütyü", "internet", "google"]):
+        return "AI Tech & Tudomány", images["tech"][img_idx]
+    elif any(w in t for w in ["gazdaság", "forint", "euró", "pénz", "tőzsde", "részvény", "szankció", "infláció", "hitel", "bank"]):
+        return "Gazdaság", images["gazdasag"][img_idx]
+    elif any(w in t for w in ["fidesz", "orbán", "kormány", "belföld", "budapest", "parlament", "magyar"]):
         return "Belföld", images["belfold"][img_idx]
-    elif any(w in t for w in ["tech", "ai", "mesterséges", "robot", "tudomány", "okostelefon", "drón", "űr", "kütyü", "tőzsde", "részvény", "wall street", "market", "nasdaq", "dow", "gazdaság"]):
-        return "Gazdaság" if "tőzsde" in t or "market" in t or "részvény" in t or "wall" in t else "AI Tech & Tudomány", images["tech"][img_idx]
     else:
         return "Külföld", images["kulfold"][img_idx]
 
-def scrape_all_news(lang="hu"):
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+def scrape_all_news():
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     categories = {"Belföld": [], "Külföld": [], "Gazdaság": [], "Vallás, Hit & Erkölcs": [], "AI Tech & Tudomány": []}
     count = 0
+    try:
+        res = requests.get("https://hirkereso.hu", headers=headers, timeout=10)
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.content, "html.parser")
+            for link in soup.find_all("a", href=True):
+                title = link.get_text(strip=True)
+                href = link["href"]
+                if title and len(title) > 25:
+                    cat, img = get_category_and_image(title, count)
+                    categories[cat].append({"title": title, "link": href, "image": img, "source": "Hírkereső"})
+                    count += 1
+                if count >= 30: break
+    except Exception as e:
+        print(f"Hiba: {e}")
 
-    global_urls = [
-        ("https://nytimes.com", "New York Times"),
-        ("https://theguardian.com", "The Guardian")
-    ]
-    for url, source in global_urls:
+    international_urls = ["https://bbci.co.uk", "https://bbci.co.uk"]
+    for url in international_urls:
         try:
-            res = requests.get(url, headers=headers, timeout=5)
+            res = requests.get(url, headers=headers, timeout=10)
             if res.status_code == 200:
                 soup = BeautifulSoup(res.content, "xml")
-                for item in soup.find_all("item")[:15]:
-                    orig_title = item.title.get_text(strip=True) if item.title else ""
-                    link = item.link.get_text(strip=True) if item.link else ""
-                    if orig_title and link:
-                        translated_title = translate_text(orig_title, lang)
-                        cat, img = get_category_and_image(translated_title, count)
-                        categories[cat].append({"title": translated_title, "link": link, "image": img, "source": translate_text(source, lang)})
-                        count += 1
-        except Exception:
-            pass
-
-    local_urls = [
-        ("https://hetek.hu", "Hetek Magazin"),
-        ("https://nlc.hu", "NLC / Nők Lapja")
-    ]
-    for url, source in local_urls:
-        try:
-            res = requests.get(url, headers=headers, timeout=5)
-            if res.status_code == 200:
-                soup = BeautifulSoup(res.content, "xml")
-                for item in soup.find_all("item")[:15]:
+                for item in soup.find_all("item"):
                     title = item.title.get_text(strip=True) if item.title else ""
                     link = item.link.get_text(strip=True) if item.link else ""
                     if title and link:
-                        translated_title = translate_text(title, lang)
-                        cat, img = get_category_and_image(translated_title, count)
-                        categories[cat].append({"title": translated_title, "link": link, "image": img, "source": translate_text(source, lang)})
+                        cat, img = get_category_and_image(title, count)
+                        source_name = "BBC News" if "bbc" in url else "CNN"
+                        categories[cat].append({"title": f"[NEMZETKÖZI] {title}", "link": link, "image": img, "source": source_name})
                         count += 1
-        except Exception:
-            pass
+                    if count >= 50: break
+        except Exception as e:
+            print(f"Hiba: {e}")
     return categories
 HTML_TEMPLATE = """
 <!DOCTYPE html>
-<html lang="{{ lang }}">
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -117,7 +94,6 @@ HTML_TEMPLATE = """
             --accent-red: #ff2a2a;
             --nav-blue: #0c1a2c;
             --border-gray: #d1d5db;
-            --ad-gold: #f59e0b;
         }
         
         body { 
@@ -128,6 +104,7 @@ HTML_TEMPLATE = """
             color: var(--text-dark);
         }
 
+        /* PRÉMIUM KÉKES-PALASZÜRKE FEJLÉC HÁTTÉR */
         header { 
             background-color: #334155; 
             padding: 3rem 1rem 1.5rem 1rem; 
@@ -171,7 +148,7 @@ HTML_TEMPLATE = """
         .logo-weekly {
             font-size: 2.2rem;
             font-weight: 900;
-            font-family: 'Arial Black', sans-serif;
+            font-family: 'Arial Black', Gadget, sans-serif;
             letter-spacing: 2px;
             color: transparent;
             -webkit-text-stroke: 1px #ffffff;
@@ -185,6 +162,7 @@ HTML_TEMPLATE = """
             margin-top: 4px;
         }
 
+        /* ÉLÉNK KÉK CHAT BUBORÉK */
         .logo-twn-bubble {
             background-color: #3ba2ff;
             color: #ffffff;
@@ -220,7 +198,7 @@ HTML_TEMPLATE = """
         .logo-news {
             font-size: 2.6rem;
             font-weight: 900;
-            font-family: 'Impact', sans-serif;
+            font-family: 'Impact', 'Arial Black', sans-serif;
             color: var(--accent-red);
             letter-spacing: 0.5px;
             line-height: 0.9;
@@ -364,7 +342,6 @@ HTML_TEMPLATE = """
             padding: 1rem;
             align-self: start;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            margin-bottom: 1.5rem;
         }
 
         .video-ad-box h4 {
@@ -393,51 +370,6 @@ HTML_TEMPLATE = """
             height: 100%;
             border: 0;
         }
-
-        .classifieds-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            background: rgba(245, 158, 11, 0.05);
-            padding: 1.5rem;
-            border: 2px dashed var(--ad-gold);
-        }
-
-        .classified-card {
-            background: white;
-            border: 1px solid var(--ad-gold);
-            padding: 1.2rem;
-            position: relative;
-        }
-
-        .classified-badge {
-            background: var(--ad-gold);
-            color: white;
-            font-size: 0.7rem;
-            font-family: sans-serif;
-            padding: 2px 6px;
-            font-weight: bold;
-            position: absolute;
-            top: 0;
-            right: 0;
-            text-transform: uppercase;
-        }
-
-        .classified-price {
-            color: var(--accent-red);
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin: 0.5rem 0;
-        }
-
-        .classified-contact {
-            font-family: sans-serif;
-            font-size: 0.85rem;
-            color: #555555;
-            background: #f3f4f6;
-            padding: 4px;
-            display: inline-block;
-        }
     </style>
 </head>
 <body>
@@ -459,17 +391,16 @@ HTML_TEMPLATE = """
                 </div>
             </div>
         </div>
-        <div class="sub-slogan">{{ sub_slogan }}</div>
+        <div class="sub-slogan">Közéleti Hetilap</div>
     </header>
 
     <div class="nav-bar">
-        <a href="/frissites" class="btn-refresh">🔄 {{ refresh_text }}</a>
-        <a href="#belfold" class="nav-item">{{ rovat1 }}</a>
-        <a href="#kulfold" class="nav-item">{{ rovat2 }}</a>
-        <a href="#gazdasag" class="nav-item">{{ rovat3 }}</a>
-        <a href="#vallas" class="nav-item">{{ rovat4 }}</a>
-        <a href="#tech" class="nav-item">{{ rovat5 }}</a>
-        <a href="#adokveszek" class="nav-item">💰 {{ rovat_ad }}</a>
+        <a href="/frissites" class="btn-refresh">🔄 Frissítés</a>
+        <a href="#belfold" class="nav-item">Belföld</a>
+        <a href="#kulfold" class="nav-item">Külföld</a>
+        <a href="#gazdasag" class="nav-item">Gazdaság</a>
+        <a href="#vallas" class="nav-item">Vallás, Hit & Erkölcs</a>
+        <a href="#tech" class="nav-item">AI Tech & Tudomány</a>
     </div>
 
     <div class="container">
@@ -477,21 +408,15 @@ HTML_TEMPLATE = """
             {% if cikkek %}
                 {% set anchor = "belfold" if rovat == "Belföld" else "kulfold" if rovat == "Külföld" else "gazdasag" if rovat == "Gazdaság" else "vallas" if rovat == "Vallás, Hit & Erkölcs" else "tech" %}
                 <div class="rovat-section" id="{{ anchor }}">
-                    <div class="rovat-title">
-                        {% if rovat == "Belföld" %}{{ rovat1 }}
-                        {% elif rovat == "Külföld" %}{{ rovat2 }}
-                        {% elif rovat == "Gazdaság" %}{{ rovat3 }}
-                        {% elif rovat == "Vallás, Hit & Erkölcs" %}{{ rovat4 }}
-                        {% else %}{{ rovat5 }}{% endif %}
-                    </div>
+                    <div class="rovat-title">{{ rovat }}</div>
                     
                     <div class="magazine-layout">
                         <div class="news-grid">
                             {% for item in cikkek %}
                                 <div class="news-card">
-                                    <img src="{{ item.image }}" alt="Borítókép">
+                                    <img src="{{ item.image }}" alt="Magazin">
                                     <div class="card-body">
-                                        <div class="source-badge">📰 {{ item.source }}</div>
+                                        <div class="source-badge">🔴 {{ item.source }}</div>
                                         <a href="{{ item.link }}" target="_blank">{{ item.title }}</a>
                                     </div>
                                 </div>
@@ -500,7 +425,7 @@ HTML_TEMPLATE = """
 
                         {% if rovat in sponsor_videos %}
                             <div class="video-ad-box">
-                                <h4>📺 {{ video_title }}</h4>
+                                <h4>📺 Ajánlott Partner Videó</h4>
                                 <div class="video-container">
                                     <iframe src="{{ sponsor_videos[rovat] }}" allowfullscreen></iframe>
                                 </div>
@@ -511,21 +436,6 @@ HTML_TEMPLATE = """
                 </div>
             {% endif %}
         {% endfor %}
-
-        <div class="rovat-section" id="adokveszek">
-            <div class="rovat-title" style="color: var(--ad-gold); border-bottom-color: var(--ad-gold);">💰 {{ rovat_ad }}</div>
-            <div class="classifieds-container">
-                {% for ad in classifieds %}
-                    <div class="classified-card">
-                        <div class="classified-badge">{{ ad.source }}</div>
-                        <h3 style="font-size: 1.1rem; margin: 0 0 0.5rem 0; font-family: sans-serif;">{{ ad.title }}</h3>
-                        <div class="classified-price">{{ ad.price }}</div>
-                        <div class="classified-contact">📞 {{ ad.contact }}</div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-
     </div>
 
 </body>
@@ -535,37 +445,14 @@ HTML_TEMPLATE = """
 @app.route("/")
 def index():
     global STORED_NEWS
-    accept_lang = request.headers.get('Accept-Language', '')
-    if 'de' in accept_lang:
-        lang = 'de'
-        labels = {"sub_slogan": "Wochenzeitung", "refresh_text": "Aktualisieren", "video_title": "Empfohlenes Partner-Video", "rovat1": "Inland", "rovat2": "Ausland", "rovat3": "Wirtschaft", "rovat4": "Religion & Moral", "rovat5": "KI Tech & Wissenschaft", "rovat_ad": "Kaufen & Verkaufen"}
-    elif 'en' in accept_lang:
-        lang = 'en'
-        labels = {"sub_slogan": "Weekly Newspaper", "refresh_text": "Refresh Now", "video_title": "Recommended Partner Video", "rovat1": "National", "rovat2": "International", "rovat3": "Economy", "rovat4": "Religion & Morals", "rovat5": "AI Tech & Science", "rovat_ad": "Classifieds (Buy/Sell)"}
-    else:
-        lang = 'hu'
-        labels = {"sub_slogan": "Közéleti Hetilap", "refresh_text": "Frissítés", "video_title": "Ajánlott Partner Videó", "rovat1": "Belföld", "rovat2": "Külföld", "rovat3": "Gazdaság", "rovat4": "Vallás, Hit & Erkölcs", "rovat5": "AI Tech & Tudomány", "rovat_ad": "Adok - Veszek piac"}
-
     if not any(STORED_NEWS.values()):
-        STORED_NEWS = scrape_all_news(lang)
-        
-    translated_classifieds = []
-    for ad in STORED_CLASSIFIEDS:
-        translated_classifieds.append({
-            "title": translate_text(ad["title"], lang),
-            "price": ad["price"],
-            "contact": ad["contact"],
-            "source": translate_text(ad["source"], lang)
-        })
-
-    return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, sponsor_videos=SPONSOR_VIDEOS, classifieds=translated_classifieds, lang=lang, **labels)
+        STORED_NEWS = scrape_all_news()
+    return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, sponsor_videos=SPONSOR_VIDEOS)
 
 @app.route("/frissites")
 def refresh():
     global STORED_NEWS
-    accept_lang = request.headers.get('Accept-Language', '')
-    lang = 'de' if 'de' in accept_lang else 'en' if 'en' in accept_lang else 'hu'
-    STORED_NEWS = scrape_all_news(lang)
+    STORED_NEWS = scrape_all_news()
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
