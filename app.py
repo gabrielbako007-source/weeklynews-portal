@@ -145,7 +145,7 @@ HTML_TEMPLATE = """
         
         /* A LOGÓDIZÁJN CSS REKREÁCIÓJA HAJSZÁLPONTOSAN A KÉPED ALAPJÁN (BOMBABIZTOS, NINCS 404!) */
         .logo-box-html {
-            background-color: #ffffff;
+            background-color: #e2e8f0;
             padding: 10px 30px;
             border-top: 1px solid #000;
             border-bottom: 1px solid #000;
@@ -257,7 +257,9 @@ HTML_TEMPLATE += """
                 <div class="logo-right-wrapper">
                     <div class="logo-text-weekly">WEEKLY</div>
                     <div class="logo-bottom-row-wrapper">
-                        <div class="logo-twn-badge">TWN</div>
+                        <div class="logo-twn-badge">
+    <span style="color: #000000; font-weight: bold; font-style: italic;">T</span><span style="color: #ffffff; font-weight: bold; font-style: italic;">W</span><span style="color: #ff2a2a; font-weight: bold; font-style: italic;">N</span>
+</div>
                         <div class="logo-text-news">NEWS</div>
                     </div>
                 </div>
