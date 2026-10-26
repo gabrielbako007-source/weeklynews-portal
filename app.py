@@ -423,14 +423,29 @@ HTML_TEMPLATE = """
                             {% endfor %}
                         </div>
 
-                        {% if rovat in sponsor_videos %}
-                            <div class="video-ad-box">
-                                <h4>📺 Ajánlott Partner Videó</h4>
-                                <div class="video-container">
-                                    <iframe src="{{ sponsor_videos[rovat] }}" allowfullscreen></iframe>
-                                </div>
-                            </div>
-                        {% endif %}
+                  <div class="sidebar-magazin-block" style="width: 100%; margin-bottom: 25px; font-family: sans-serif;">
+    
+    <!-- 1. HETI SZÍNES BORÍTÓKÉP (Amit mappa-szinten, kód nélkül cserélsz) -->
+    <div style="margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <img src="/static/friss_magazin.jpg" alt="Aktuális Borító" style="width: 100%; height: auto; display: block;">
+    </div>
+
+    <!-- 2. REKLÁMVIDEÓ: Közvetlenül alatta némítva, magától indul -->
+    <div style="border: 1px solid #e0e0e0; padding: 8px; background: #fafafa; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h4 style="color: #ff0000; font-size: 11px; text-align: center; letter-spacing: 1px; margin: 5px 0 8px 0; font-weight: bold;">🚨 AJÁNLOTT PARTNER VIDEÓ</h4>
+        <iframe 
+            width="100%" 
+            height="180" 
+            src="https://youtube.com" 
+            frameborder="0" 
+            allow="autoplay; encrypted-media" 
+            allowfullscreen
+            style="border-radius: 2px;">
+        </iframe>
+    </div>
+
+</div>
+
                     </div>
 
                 </div>
