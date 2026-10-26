@@ -144,16 +144,16 @@ HTML_TEMPLATE = """
         }
         
         /* ==========================================================================
-   146-201 SORIG: A LOGÓDIZÁJN HAJSZÁLPONTOS REKREÁCIÓJA AZ EREDETI ALAPJÁN
+   146-201 SORIG: A LOGÓDIZÁJN HAJSZÁLPONTOS REKREÁCIÓJA EZÜSTÖS SZÍNEKKEL
    ========================================================================== */
 
 @import url('https://googleapis.com');
 
 .logo-box-html {
-    background-color: transparent; /* Így átlátszó vagy bármilyen alapon tökéletes */
+    background-color: transparent; /* Átlátszó marad, hogy átvegye a gyönyörű sötét hátteredet */
     padding: 6px 0;
-    border-top: 1px solid #1a1a1a;    /* HAJSZÁLVÉKONY FELSŐ CSÍK */
-    border-bottom: 1px solid #1a1a1a; /* HAJSZÁLVÉKONY ALSÓ CSÍK */
+    border-top: 1px solid #e2e8f0;    /* HAJSZÁLVÉKONY EZÜSTÖS FELSŐ CSÍK */
+    border-bottom: 1px solid #e2e8f0; /* HAJSZÁLVÉKONY EZÜSTÖS ALSÓ CSÍK */
     display: inline-flex;
     align-items: stretch;
     font-family: 'Bodoni Moda', serif;
@@ -163,20 +163,19 @@ HTML_TEMPLATE = """
 .logo-text-the {
     font-size: 78px;
     font-weight: 400;
-    color: #1a1a1a;
+    color: #e2e8f0; /* EZÜSTÖS SZÍNŰ "THE" FELIRAT */
     line-height: 0.85;
     letter-spacing: -3px;
     padding-right: 14px;
     display: flex;
     align-items: center;
-    /* NINCS TÖBBÉ FÜGGŐLEGES ELVÁLASZTÓ VONAL */
 }
 
 .logo-right-wrapper {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 215px; /* FIX SZÉLESSÉG, HOGY A WEEKLY ÉS A NEWS SÍKBAN VEGZŐDJÖN */
+    width: 215px; /* FIX SZÉLESSÉG A TÖKÉLETES SÍKHOZ */
     padding-left: 2px;
 }
 
@@ -186,7 +185,7 @@ HTML_TEMPLATE = """
     font-weight: 700;
     letter-spacing: 1.5px;
     color: transparent;
-    -webkit-text-stroke: 1px #1a1a1a; /* HAJSZÁLVÉKONY KÖRVONAL */
+    -webkit-text-stroke: 1px #e2e8f0; /* EZÜSTÖS KÖRVONALÚ "WEEKLY" */
     line-height: 0.95;
     text-transform: uppercase;
     width: 100%;
@@ -201,7 +200,7 @@ HTML_TEMPLATE = """
 }
 
 .logo-twn-badge {
-    background-color: #2ea6f2; /* AZ EREDETI ÉLÉNK KÉK */
+    background-color: #2ea6f2; /* AZ EREDETI ÉLÉNK KÉK BUBORÉK */
     padding: 1px 7px;
     border-radius: 5px;
     display: inline-flex;
@@ -227,16 +226,16 @@ HTML_TEMPLATE = """
     border-color: #2ea6f2 transparent transparent transparent;
 }
 
-/* Egyedi betűszínek a buborékon belül az eredeti szerint */
-.logo-twn-badge span:nth-child(1) { color: #1a1a1a; } /* T = Fekete */
+/* Betűszínek a kék buborékon belül */
+.logo-twn-badge span:nth-child(1) { color: #111827; } /* T = Sötét a jó olvashatóságért a kék alapon */
 .logo-twn-badge span:nth-child(2) { color: #ffffff; } /* W = Fehér */
 .logo-twn-badge span:nth-child(3) { color: #e62129; } /* N = Piros */
 
 .logo-text-news {
-    font-family: 'Oswald', sans-serif; /* NYÚJTOTT, MODERN, VASTAG BETŰTÍPUS */
+    font-family: 'Oswald', sans-serif;
     font-size: 38px;
     font-weight: 700;
-    color: #e62129; /* AZ EREDETI DESIGN PIROS SZÍNE */
+    color: #e62129; /* AZ EREDETI PIROS */
     line-height: 0.9;
     letter-spacing: 0.5px;
     text-transform: uppercase;
