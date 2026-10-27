@@ -9,7 +9,6 @@ app.secret_key = "twn_super_secret_key_for_session"
 CONFIG_FILE = "twn_config.json"
 ADMIN_PASSWORD = "twnadmin2026"
 
-# 🔌 LÉTREHOZVA A 9 SORSZÁMOZOTT BOX ÉS A CÍMLAPI BANNER CSATLAKOZÓJA
 DEFAULT_CONFIG = {
     "cover_links": {
         "kulfold_politika": "https://twnnews.hu",
@@ -26,7 +25,7 @@ DEFAULT_CONFIG = {
         "hatos_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hatos helyfoglalás", "url": "/hirdetes"},
         "hetes_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hetes helyfoglalás", "url": "/hirdetes"},
         "nyolcas_ad": {"type": "text", "content": "Saját Hirdetési Felület — Nyolcas helyfoglalás", "url": "/hirdetes"},
-        "kilences_ad": {"type": "text", "content": "Saját Hirdetési Felület — Kilences helyfoglalás (Videó)", "url": "/hirdetes"},
+        "kilences_ad": {"type": "text", "content": "Saját Hirdetési Felület — Kilences helyfoglalás", "url": "/hirdetes"},
         "kulon_hasab_ad": {"type": "text", "content": "Kiemelt Címlapi Hirdetés — Helyfoglalás", "url": "/hirdetes"}
     }
 }
@@ -169,7 +168,6 @@ HTML_TEMPLATE = AD_MACRO + """
         .nav-item-marketing { color: #38bdf8; border-left: 1px solid #475569; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
         
-        /* 🔒 VISSZAÁLLÍTVA AZ EREDETI 3 HASÁBOS SZERKEZET SZÉLESSÉGEK */
         .three-column-grid-container { display: grid; grid-template-columns: 320px 1fr 320px; gap: 2rem; max-width: 1700px; margin: 2rem auto; padding: 0 1rem; }
         @media (max-width: 1300px) { .three-column-grid-container { grid-template-columns: 1fr; } }
         
@@ -197,6 +195,32 @@ HTML_TEMPLATE = AD_MACRO + """
 """
 HTML_TEMPLATE += """
 <body>
+    <div class="frozen-top-header">
+        <header>
+            <div class="header-logo-container">
+                <div class="logo-box-html">
+                    <div class="logo-text-the">THE</div>
+                    <div class="logo-right-wrapper">
+                        <div class="logo-text-weekly">WEEKLY</div>
+                        <div class="logo-bottom-row-wrapper">
+                            <div class="logo-twn-badge"><span>T</span><span>W</span><span>N</span></div>
+                            <div class="logo-text-news">NEWS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="nav-bar">
+            <a href="/frissites" class="btn-refresh">🔄 Frissítés</a>
+            <a href="#belfold" class="nav-item">Belföld</a>
+            <a href="#kulfold" class="nav-item">Külföld</a>
+            <a href="#gazdasag" class="nav-item">Gazdaság</a>
+            <a href="#vallas" class="nav-item">Vallás</a>
+            <a href="#tech" class="nav-item">Család & Tech</a>
+            <a href="/hirdetes" class="nav-item nav-item-marketing">💼 Hirdetés feladás</a>
+        </div>
+    </div>
+
     <div class="three-column-grid-container">
         <!-- ================= BAL HASÁB ================= -->
         <div class="side-column-stream">
@@ -243,7 +267,6 @@ HTML_TEMPLATE += """
                 <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
             </div>
 
-            <!-- Kiemelt hirdetési sáv közvetlenül a borító alatt -->
             {{ render_ad(cfg.ads.kulon_hasab_ad, 'kulon_hasab_top') }}
             
             <div class="rovat-section" id="belfold">
