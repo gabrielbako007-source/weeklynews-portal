@@ -524,3 +524,171 @@ HTML_TEMPLATE = """
 </body>
 </html>
 """
+# ================= JOGI ÉS MARKETING SABLONOK =================
+JOGI_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ cim }} — THE WEEKLY TWN NEWS</title>
+    <style>
+        body { font-family: sans-serif; background-color: #1e293b; color: #fff; padding: 40px 20px; line-height: 1.6; }
+        .box { max-width: 800px; margin: 0 auto; background: #0f172a; padding: 40px; border-radius: 8px; border: 1px solid #475569; }
+        h1 { color: #38bdf8; border-bottom: 2px solid #38bdf8; padding-bottom: 10px; }
+        h3 { color: #ff2a2a; margin-top: 25px; }
+        .back { display: inline-block; margin-top: 30px; background: #ff2a2a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>{{ cim }}</h1>
+        <div>{{ tartalom | safe }}</div>
+        <a href="/" class="back">⬅ Vissza a főoldalra</a>
+    </div>
+</body>
+</html>
+"""
+
+MARKETING_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Hirdessen a TWN News-on</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1e293b; color: #fff; text-align: center; padding: 50px 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #0f172a; padding: 30px; border-radius: 8px; border: 1px solid #475569; }
+        h1 { color: #38bdf8; }
+        p { line-height: 1.6; color: #cbd5e1; }
+        .back-btn { display: inline-block; margin-top: 20px; background: #ff2a2a; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TWN News Médiaajánlat</h1>
+        <p>Szeretné termékét, szolgáltatását vagy hirdetését elhelyezni a felületünkön?</p>
+        <p><strong>Elérhető felületeink:</strong> Kiemelt képes bannerek, beágyazott hirdetések a hasábok között, és egyedi PR cikkek.</p>
+        <p>Kapcsolatfelvétel: <strong>info@twnnews.hu</strong></p>
+        <a href="/" class="back-btn">⬅ Vissza a címlapra</a>
+    </div>
+</body>
+</html>
+"""
+
+ADMIN_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>TWN News — Szuper Admin</title>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: #fff; padding: 20px; }
+        .panel { max-width: 700px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 8px; border: 1px solid #475569; }
+        h2, h3 { color: #38bdf8; border-bottom: 1px solid #475569; padding-bottom: 8px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #cbd5e1; font-size: 0.9rem; }
+        input[type="text"], select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #475569; background: #0f172a; color: #fff; box-sizing: border-box; }
+        .btn-save { background: #2ea6f2; color: #fff; border: 0; padding: 12px 25px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 1rem; width: 100%; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <a href="/admin/logout" style="float:right; color:#ff2a2a; text-decoration:none; font-weight:bold;">Kijelentkezés ✖</a>
+        <h2>TWN News Vezérlőpult</h2>
+        <form method="POST">
+            <h3>1. Kattintható Magazinborító Linkek</h3>
+            <div class="form-group"><label>Külföld & Politika</label><input type="text" name="cover_kulfold" value="{{ cfg.cover_links.kulfold_politika }}"></div>
+            <div class="form-group"><label>VENIA-SOKK</label><input type="text" name="cover_venia" value="{{ cfg.cover_links.venia_sokk }}"></div>
+            <div class="form-group"><label>Vallás & Hit</label><input type="text" name="cover_vallas" value="{{ cfg.cover_links.vallas_hit }}"></div>
+            <div class="form-group"><label>Tudomány & Tech</label><input type="text" name="cover_tech" value="{{ cfg.cover_links.tudomany_tech }}"></div>
+            <h3>2. Reklámhelyek Videó és Banner Kezelése</h3>
+            <div class="form-group">
+                <label>Vallás Hasáb Hirdetés Típusa</label>
+                <select name="vallas_ad_type">
+                    <option value="text" {% if cfg.ads.vallas_ad.type == 'text' %}selected{% endif %}>Sima Szöveg</option>
+                    <option value="image" {% if cfg.ads.vallas_ad.type == 'image' %}selected{% endif %}>Banner (Kép URL)</option>
+                    <option value="youtube" {% if cfg.ads.vallas_ad.type == 'youtube' %}selected{% endif %}>YouTube Videó (ID)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Vallás Reklám Tartalom (Szöveg / Banner link / YouTube ID)</label><input type="text" name="vallas_ad_content" value="{{ cfg.ads.vallas_ad.content }}"></div>
+            <div class="form-group"><label>Vallás Kattintási Cél (Cél URL)</label><input type="text" name="vallas_ad_url" value="{{ cfg.ads.vallas_ad.url }}"></div>
+            <button type="submit" class="btn-save">💾 Beállítások mentése és élesítése</button>
+        </form>
+    </div>
+</body>
+</html>
+"""
+
+# ================= FLASK ÚTVONALAK (ROUTES) =================
+@app.route("/")
+def index():
+    global STORED_NEWS
+    if not STORED_NEWS:
+        STORED_NEWS = scrape_all_news()
+    current_config = load_config()
+    return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, cfg=current_config)
+
+@app.route("/hirdetes")
+def hirdetes():
+    return render_template_string(MARKETING_TEMPLATE)
+
+@app.route("/impresszum")
+def impresszum():
+    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p><h3>Felelősségi nyilatkozat:</h3><p>A TWN News felületén megjelenő hírek jelentős része egy automatizált rendszeren keresztül, külső sajtóorgánumok nyilvánosan elérhető RSS csatornáiból származik.</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Impresszum", tartalom=szoveg)
+
+@app.route("/aszf")
+def aszf():
+    szoveg = "<h3>1. Általános feltételek</h3><p>A twnnews.hu használatával minden látogató automatikusan elfogadja a jelen Általános Szerződési Feltételeket.</p><h3>2. Hirdetések</h3><p>A hasábok között megjelenő egyedi reklámhelyeket a Hirdetők az Adminisztrációs felületen kezelhetik.</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Általános Szerződési Feltételek (ÁSZF)", tartalom=szoveg)
+
+@app.route("/adatvedelem")
+def adatvedelem():
+    szoveg = "<h3>1. Adatkezelés</h3><p>A TWN News kizárólag üzleti kapcsolattartás céljából kezel személyes adatokat (nevet és e-mail címet).</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Adatvédelmi Tájékoztató (GDPR)", tartalom=szoveg)
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    if not session.get("logged_in"):
+        if request.method == "POST":
+            if request.form.get("password") == ADMIN_PASSWORD:
+                session["logged_in"] = True
+                return redirect(url_for("admin"))
+            return '<h3>Hibás jelszó! <a href="/admin">Újra</a></h3>'
+        return '<body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;"><form method="POST" style="background:#1e293b; display:inline-block; padding:30px; border-radius:8px; border:1px solid #475569;"><label style="display:block; margin-bottom:10px;">Admin Jelszó:</label><input type="password" name="password" style="padding:8px; background:#0f172a; color:#fff; border:1px solid #475569;"><br><br><button type="submit" style="background:#ff2a2a; color:#fff; border:0; padding:8px 15px; border-radius:4px; cursor:pointer;">Belépés</button></form></body>'
+    
+    current_config = load_config()
+    if request.method == "POST":
+        current_config["cover_links"]["kulfold_politika"] = request.form.get("cover_kulfold")
+        current_config["cover_links"]["venia_sokk"] = request.form.get("cover_venia")
+        current_config["cover_links"]["vallas_hit"] = request.form.get("cover_vallas")
+        current_config["cover_links"]["tudomany_tech"] = request.form.get("cover_tech")
+        current_config["ads"]["vallas_ad"]["type"] = request.form.get("vallas_ad_type")
+        current_config["ads"]["vallas_ad"]["content"] = request.form.get("vallas_ad_content")
+        current_config["ads"]["vallas_ad"]["url"] = request.form.get("vallas_ad_url")
+        save_config(current_config)
+        return redirect(url_for("index"))
+    return render_template_string(ADMIN_TEMPLATE, cfg=current_config)
+
+@app.route("/admin/logout")
+def logout():
+    session["logged_in"] = False
+    return redirect(url_for("index"))
+
+@app.route('/logo_kepek/<path:filename>')
+def serve_logos(filename):
+    return send_from_directory('.', filename)
+
+@app.route('/friss_magazin.jpg')
+def serve_friss_magazin():
+    return send_from_directory('.', 'friss_magazin.jpg')
+
+@app.route("/frissites")
+def refresh():
+    global STORED_NEWS
+    STORED_NEWS = scrape_all_news()
+    return redirect(url_for("index"))
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
