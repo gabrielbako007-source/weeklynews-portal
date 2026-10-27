@@ -112,6 +112,7 @@ def scrape_all_news():
                 "cikkek": fake_fetch_news(ujsag["id"], ujsag["name"], ujsag["site"])
             })
     return categories
+
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
@@ -225,6 +226,7 @@ HTML_TEMPLATE = """
         .nav-item { color: white; font-family: sans-serif; font-weight: bold; padding: 1.1rem 1.5rem; text-decoration: none; font-size: 1.05rem; }
         .nav-item-marketing { color: #38bdf8; border-left: 1px solid #475569; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
+        
         .three-column-grid-container {
             display: grid;
             grid-template-columns: 320px 1fr 320px;
@@ -236,7 +238,6 @@ HTML_TEMPLATE = """
         @media (max-width: 1300px) {
             .three-column-grid-container { grid-template-columns: 1fr; }
         }
-        
         .side-column-stream { display: flex; flex-direction: column; gap: 25px; }
         
         .center-news-stream { 
@@ -430,6 +431,9 @@ HTML_TEMPLATE += """
         <!-- ================= KÖZÉPSŐ HASÁB ================= -->
         <div class="center-news-stream">
             <div class="main-magazine-cover">
+                <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
+                <a href="{{ cfg.cover_links.kulfold_politika }}" target="_blank" class="cover-hotspot hs-kulfold" title="Külföld & Politika"></a>
+                <a href="{{ cfg.cover_links.venia_sokk }}" target="_blank" class="cover-hotspot hs-venia" title="Venia-Sokk"></a>
             <div class="rovat-section" id="belfold">
                 <div class="rovat-title">Belföld hírei</div>
                 <div class="news-grid">
@@ -616,12 +620,6 @@ ADMIN_TEMPLATE = """
 """
 
 # ================= FLASK ÚTVONALAK (ROUTES) =================
-@app.route("/")
-def index():
-    global STORED_NEWS
-    if not STORED_NEWS:
-        STORED_NEWS = scrape_all_news()
-    current_config = load_config()
 @app.route("/")
 def index():
     global STORED_NEWS
