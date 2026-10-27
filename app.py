@@ -447,7 +447,7 @@ HTML_TEMPLATE = """
     <div class="frozen-top-header">
         <header>
             <div class="header-logo-container">
-                                              <img src="/twn_logo.png" style="max-width: 480px; width: 100%; height: auto; display: block; margin: 0 auto; background-color: #15223f; padding: 5px 0;">
+                                    <img src="/twn_logo.png" style="max-width: 480px; width: 100%; height: auto; display: block; margin: 0 auto; padding: 5px 0; mix-blend-mode: screen;">
         </header>
         
         <div class="nav-bar">
