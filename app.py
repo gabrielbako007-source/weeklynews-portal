@@ -25,6 +25,7 @@ DEFAULT_CONFIG = {
         "hatos_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hatos helyfoglalás", "url": "/hirdetes"},
         "hetes_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hetes helyfoglalás", "url": "/hirdetes"},
         "nyolcas_ad": {"type": "text", "content": "Saját Hirdetési Felület — Nyolcas helyfoglalás", "url": "/hirdetes"},
+        "kilences_ad": {"type": "text", "content": "Saját Hirdetési Felület — Kilences helyfoglalás", "url": "/hirdetes"},
         "kulon_hasab_ad": {"type": "text", "content": "Kiemelt Címlapi Hirdetés — Helyfoglalás", "url": "/hirdetes"}
     }
 }
@@ -168,7 +169,6 @@ HTML_TEMPLATE = AD_MACRO + """
         .nav-item-marketing { color: #38bdf8; border-left: 1px solid #475569; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
         
-        /* 🔒 SZIGORÚAN 3 HASÁBOS RÁCSSZERKEZET AZ EREDETI SZÉLESSÉGEKKEL */
         .three-column-grid-container { display: grid; grid-template-columns: 320px 1fr 320px; gap: 2rem; max-width: 1700px; margin: 2rem auto; padding: 0 1rem; }
         @media (max-width: 1300px) { .three-column-grid-container { grid-template-columns: 1fr; } }
         
@@ -242,7 +242,7 @@ HTML_TEMPLATE += """
                 <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
             </div>
 
-            <!-- Kiemelt címlapi hirdetés közvetlenül a borító alatt -->
+            <!-- Kiemelt címlapi hirdetés a borító alatt -->
             {{ render_ad(cfg.ads.kulon_hasab_ad, 'kulon_hasab_top') }}
             
             <div class="rovat-section" id="belfold">
@@ -530,7 +530,6 @@ def admin():
         current_config["ads"]["kulon_hasab_ad"]["content"] = request.form.get("kulon_hasab_ad_content")
         current_config["ads"]["kulon_hasab_ad"]["url"] = request.form.get("kulon_hasab_ad_url")
         
-        # MINDA 9 ADATMEZŐ PONTOS MENTÉSI FOLYAMATA
         ad_keys = ['egyes_ad', 'kettes_ad', 'harmas_ad', 'negyes_ad', 'otos_ad', 'hatos_ad', 'hetes_ad', 'nyolcas_ad', 'kilences_ad']
         for key in ad_keys:
             current_config["ads"][key]["type"] = request.form.get(f"{key}_type")
