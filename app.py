@@ -447,19 +447,7 @@ HTML_TEMPLATE = """
     <div class="frozen-top-header">
         <header>
             <div class="header-logo-container">
-                <div class="logo-box-html">
-                    <div class="logo-text-the">THE</div>
-                    <div class="logo-right-wrapper">
-                        <div class="logo-text-weekly">WEEKLY</div>
-                        <div class="logo-bottom-row-wrapper">
-                            <div class="logo-twn-badge">
-                                <span>T</span><span>W</span><span>N</span>
-                            </div>
-                            <div class="logo-text-news">NEWS</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                              <img src="/logo.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto; background-color: #15223f;">
         </header>
         
         <div class="nav-bar">
