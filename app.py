@@ -44,6 +44,7 @@ def load_config():
 def save_config(config):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=4)
+
 HIRCATORNAK = {
     "Belföld": [
         {"id": "1", "name": "Origo", "site": "https://origo.hu"}, 
@@ -172,7 +173,7 @@ HTML_TEMPLATE = AD_MACRO + """
         @media (max-width: 1300px) { .three-column-grid-container { grid-template-columns: 1fr; } }
         
         .side-column-stream { display: flex; flex-direction: column; gap: 25px; }
-        .center-news-stream { display: flex; flex-direction: column; align-items: center; }
+        .center-news-stream { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .ujsag-logo-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; }
         .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
@@ -497,7 +498,6 @@ ADMIN_TEMPLATE = """
 </body>
 </html>
 """
-
 @app.route("/")
 def index():
     global STORED_NEWS
