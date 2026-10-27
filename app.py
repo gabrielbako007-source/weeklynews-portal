@@ -346,43 +346,61 @@ HTML_TEMPLATE = """
 }
 .footer-bottom-container { max-width: 1400px; margin: 0 auto; }
 
-/* === INNENTŐL MÁSOLD BE A JAVÍTÁST === */
 @media (max-width: 768px) {
-    /* Menüsor kényszerítése egymás mellé és görgethetővé tétele */
+    /* 1. Kiszabadítjuk a rögzített fejrészt a korlátozások alól */
+    .frozen-top-header {
+        height: auto !important;
+        position: relative !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* 2. A menüt tartalmazó sávot kényszerítjük egymás mellé és oldalra görgethetővé tesszük */
     .nav-bar {
         display: flex !important;
         flex-direction: row !important;
+        flex-wrap: nowrap !important;
         overflow-x: auto !important;
         white-space: nowrap !important;
         width: 100% !important;
-        padding: 10px !important;
+        padding: 12px 5px !important;
+        box-sizing: border-box !important;
         -webkit-overflow-scrolling: touch;
     }
-    .nav-bar a {
+
+    /* 3. A menüpontok ne nyomódjanak össze és kapjanak szép helyet */
+    .nav-bar a.nav-item, .nav-bar a.btn-refresh {
         display: inline-block !important;
         flex-shrink: 0 !important;
         margin-right: 15px !important;
+        float: none !important;
     }
-    /* Hirdetés gomb új sorba helyezése, hogy ne takarjon el semmit */
-    [href*="hirdetes"], [class*="hirdetes"] {
+
+    /* 4. A Hirdetés feladás gombot teljesen leválasztjuk, és tiszta, új sorba tesszük alájuk */
+    .nav-bar a.nav-item-marketing, [href*="hirdetes"] {
         display: block !important;
         width: 90% !important;
-        margin: 15px auto !important;
+        margin: 15px auto 5px auto !important;
         text-align: center !important;
         clear: both !important;
+        float: none !important;
     }
-    /* Lábléc linkek rendezése 2 oszlopba */
+
+    /* 5. A szürke lábléc (footer) elemeit 2 szép oszlopba rendezzük */
     .footer-bottom-dark-bar, footer, .footer {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 15px !important;
         padding: 20px !important;
     }
+
     .footer-bottom-dark-bar a, footer a {
         display: block !important;
         font-size: 14px !important;
+        margin-bottom: 5px !important;
     }
 }
+
 /* === IDÁIG TART A JAVÍTÁS === */
 
     </style>
