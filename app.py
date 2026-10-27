@@ -597,6 +597,7 @@ HTML_TEMPLATE = """
             <div class="footer-logo-area">
                 <img src="/twn_logo.png" alt="The Weekly TWN News" style="max-width: 180px; height: auto; display: block; margin: 0 auto; padding: 5px;">
 
+
             </div>
             <div class="footer-links-grid">
                 <a href="/impresszum" class="footer-link">I Impresszum</a>
@@ -720,6 +721,13 @@ def index():
         STORED_NEWS = scrape_all_news()
     current_config = load_config()
     return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, cfg=current_config)
+
+@app.route("/twn_logo.png")
+def serve_logo():
+    from flask import send_from_directory
+    import os
+    return send_from_directory(os.getcwd(), "twn_logo.png")
+
 
 @app.route("/hirdetes")
 def hirdetes():
