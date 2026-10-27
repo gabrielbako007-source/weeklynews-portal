@@ -37,9 +37,24 @@ HIRCATORNAK = {
 STORED_NEWS = {}
 
 def fake_fetch_news(ujsag_id, ujsag_nev):
+    # Kiválasztjuk a megfelelő linket, hogy a kattintás valódi oldalra vigyen
+    link = "https://theweeklytwnnews.hu"
+    for kat, lista in HIRCATORNAK.items():
+        for u in lista:
+            if u["id"] == ujsag_id:
+                # Egyszerű tesztlinkek hozzárendelése, amik a megnyíló újságok főoldalára mutatnak
+                if ujsag_id == "1": link = "https://origo.hu"
+                elif ujsag_id == "2": link = "https://blikk.hu"
+                elif ujsag_id == "3": link = "https://nlc.hu"
+                elif ujsag_id == "16": link = "https://hetek.hu"
+                elif ujsag_id == "17": link = "https://portfolio.hu"
+                elif ujsag_id == "20": link = "https://bbc.com"
+                elif ujsag_id == "22": link = "https://theguardian.com"
+                elif ujsag_id == "30": link = "https://cnn.com"
+                else: link = "https://index.hu"
     return [
-        {"title": f"Vezető hír és friss közéleti riport — {ujsag_nev}", "link": "#", "logo": f"{ujsag_id}.jpg.jpg"},
-        {"title": f"Rendkívüli beszámoló és helyi elemzés", "link": "#", "logo": f"{ujsag_id}.jpg.jpg"}
+        {"title": f"Vezető hír és friss közéleti riport — {ujsag_nev}", "link": link, "logo": f"{ujsag_id}.jpg.jpg"},
+        {"title": f"Rendkívüli beszámoló és helyi elemzés", "link": link, "logo": f"{ujsag_id}.jpg.jpg"}
     ]
 
 def scrape_all_news():
@@ -213,7 +228,7 @@ HTML_TEMPLATE = """
         .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
         .cikk-link:hover { color: #2ea6f2; text-decoration: underline; }
 
-        /* EZÜSTÖS MINI GOOGLE HIRDETÉSI BOXOK */
+        /* SŰRŰBB, EZÜSTÖS MINI GOOGLE HIRDETÉSI BOXOK */
         .twn-mini-ad { background-color: #1a202c; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; width: 100%; box-sizing: border-box; text-align: center; margin: 10px 0; }
         .ad-label { font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
         .ad-text { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; }
@@ -270,6 +285,10 @@ HTML_TEMPLATE += """
                             </div>
                         {% endfor %}
                     </div>
+                    <div class="twn-mini-ad">
+                        <span class="ad-label">Hirdetés / Google Ad</span>
+                        <span class="ad-text">Saját Hirdetési Felület — Helyfoglalás az Adminban!</span>
+                    </div>
                 {% endfor %}
             </div>
 
@@ -285,6 +304,11 @@ HTML_TEMPLATE += """
                                     <a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a>
                                 </div>
                             {% endfor %}
+                        </div>
+                        
+                        <div class="twn-mini-ad">
+                            <span class="ad-label">Hirdetési zóna</span>
+                            <span class="ad-text">Prémium Reklámfelület — TWN Ad Space</span>
                         </div>
                     {% endfor %}
                 </div>
@@ -335,7 +359,7 @@ HTML_TEMPLATE += """
 
         <!-- ================= JOBB HASÁB ================= -->
         <div class="side-column-stream">
-            <!-- ROVAT: CSALÁD & TECH (Aszimmetrikus hirdetőboxokkal) -->
+            <!-- ROVAT: CSALÁD & TECH -->
             <div class="rovat-section" id="tech">
                 <div class="rovat-title">Család & Tech</div>
                 <div class="side-column-stream">
@@ -349,11 +373,10 @@ HTML_TEMPLATE += """
                             {% endfor %}
                         </div>
                         
-                        <!-- ASZIMMETRIKUS HIRDETÉSI BEÉKELÉS A HASÁBOK KÖZÉ -->
-                        {% if loop.index % 3 == 0 %}
+                        {% if loop.index % 2 == 0 %}
                             <div class="twn-mini-ad">
                                 <span class="ad-label">Hirdetési zóna</span>
-                                <span class="ad-text">Saját Hirdetési Felület — Foglaljon helyet!</span>
+                                <span class="ad-text">Saját Hirdetési Felület — Eladó hirdetési hely</span>
                             </div>
                         {% endif %}
                     {% endfor %}
