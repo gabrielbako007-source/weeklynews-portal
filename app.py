@@ -788,6 +788,11 @@ def refresh():
     global STORED_NEWS
     STORED_NEWS = scrape_all_news()
     return redirect(url_for("index"))
+@app.route("/twn_logo.png")
+def serve_top_logo():
+    from flask import send_from_directory
+    import os
+    return send_from_directory(os.getcwd(), "twn_logo.png")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
