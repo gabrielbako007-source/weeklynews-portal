@@ -426,7 +426,19 @@ HTML_TEMPLATE = """
         margin-top: 10px !important;
     }
 }
-
+@media (min-width: 769px) {
+    .footer-bottom-dark-bar div, footer div, .footer div, .footer-links-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 25px !important;
+        width: 100% !important;
+    }
+    .footer-bottom-dark-bar a, footer a, .footer a {
+        display: inline-block !important;
+        white-space: nowrap !important;
+    }
+}
 /* === IDÁIG TART A JAVÍTÁS === */
 
     </style>
