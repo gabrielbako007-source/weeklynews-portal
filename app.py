@@ -9,7 +9,6 @@ app.secret_key = "twn_super_secret_key_for_session"
 CONFIG_FILE = "twn_config.json"
 ADMIN_PASSWORD = "twnadmin2026"
 
-# 🔌 PONTOSAN 8 DARAB SORSZÁMOZOTT CSATLAKOZÓ ÉS A KÜLÖN HASÁB
 DEFAULT_CONFIG = {
     "cover_links": {
         "kulfold_politika": "https://twnnews.hu",
@@ -26,7 +25,7 @@ DEFAULT_CONFIG = {
         "hatos_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hatos helyfoglalás", "url": "/hirdetes"},
         "hetes_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hetes helyfoglalás", "url": "/hirdetes"},
         "nyolcas_ad": {"type": "text", "content": "Saját Hirdetési Felület — Nyolcas helyfoglalás", "url": "/hirdetes"},
-        "kulon_hasab_ad": {"type": "text", "content": "Kiemelt Oldalsó Hirdetési Hasáb — Helyfoglalás", "url": "/hirdetes"}
+        "kulon_hasab_ad": {"type": "text", "content": "Kiemelt Címlapi Hirdetés — Helyfoglalás", "url": "/hirdetes"}
     }
 }
 
@@ -169,29 +168,21 @@ HTML_TEMPLATE = AD_MACRO + """
         .nav-item-marketing { color: #38bdf8; border-left: 1px solid #475569; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
         
-        .three-column-grid-container { display: grid; grid-template-columns: 320px 1fr 320px 300px; gap: 2rem; max-width: 1900px; margin: 2rem auto; padding: 0 1rem; }
-        @media (max-width: 1600px) { .three-column-grid-container { grid-template-columns: 320px 1fr 320px; } .marketing-sidebar-column { display: none; } }
+        /* 🔒 SZIGORÚAN 3 HASÁBOS RÁCSSZERKEZET AZ EREDETI SZÉLESSÉGEKKEL */
+        .three-column-grid-container { display: grid; grid-template-columns: 320px 1fr 320px; gap: 2rem; max-width: 1700px; margin: 2rem auto; padding: 0 1rem; }
         @media (max-width: 1300px) { .three-column-grid-container { grid-template-columns: 1fr; } }
         
         .side-column-stream { display: flex; flex-direction: column; gap: 25px; }
         .center-news-stream { display: flex; flex-direction: column; align-items: center; }
-        .marketing-sidebar-column { display: flex; flex-direction: column; gap: 25px; background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; height: fit-content; }
-        .main-magazine-cover { width: 100%; max-width: 480px; margin: 0 auto 3rem auto; border: 2px solid #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.5); position: relative; }
-        .main-magazine-cover img { width: 100%; height: auto; display: block; }
-        .cover-hotspot { position: absolute; background: rgba(255,255,255,0); transition: background 0.2s ease; cursor: pointer; }
-        .cover-hotspot:hover { background: rgba(255,255,255,0.15); }
-        .hs-kulfold { top: 35%; left: 35%; width: 28%; height: 5%; border-radius: 10px; }
-        .hs-venia { top: 66%; left: 52%; width: 44%; height: 16%; }
-        .hs-vallas { top: 76%; left: 3%; width: 45%; height: 12%; }
-        .hs-tech { top: 88%; left: 51%; width: 46%; height: 9%; border-radius: 10px; }
-        .rovat-section { margin-bottom: 3.5rem; width: 100%; }
-        .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; }
         .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .ujsag-logo-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; }
         .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
         .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
         .cikk-link:hover { color: #2ea6f2; text-decoration: underline; }
+        .twn-mini-ad { background-color: #1a202c; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; width: 100%; box-sizing: border-box; text-align: center; margin: 10px 0; overflow: hidden; }
+        .ad-label { font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
+        .ad-text { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; text-decoration: none; }
+        .ad-img { width: 100%; height: auto; border-radius: 4px; display: block; }
         footer { background-color: #737373; padding: 30px 20px; margin-top: 5rem; border-top: 4px solid #ff2a2a; }
         .footer-top-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 30px; }
         .footer-logo-area { background: #fff; padding: 15px 25px; border-radius: 8px; display: inline-block; }
@@ -250,6 +241,9 @@ HTML_TEMPLATE += """
                 <a href="{{ cfg.cover_links.vallas_hit }}" target="_blank" class="cover-hotspot hs-vallas" title="Vallás, Hit & Erkölcs"></a>
                 <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
             </div>
+
+            <!-- Kiemelt címlapi hirdetés közvetlenül a borító alatt -->
+            {{ render_ad(cfg.ads.kulon_hasab_ad, 'kulon_hasab_top') }}
             
             <div class="rovat-section" id="belfold">
                 <div class="rovat-title">Belföld hírei</div>
@@ -303,16 +297,11 @@ HTML_TEMPLATE += """
                     </div>
                     {% if loop.index == 1 %}
                         {{ render_ad(cfg.ads.nyolcas_ad, 'nyolcas') }}
+                    {% elif loop.index == 2 %}
+                        {{ render_ad(cfg.ads.kilences_ad, 'kilences') }}
                     {% endif %}
                 {% endfor %}
             </div>
-        </div>
-
-        <div class="marketing-sidebar-column">
-            <div style="text-align: center; border-bottom: 2px solid #ff2a2a; padding-bottom: 5px; margin-bottom: 10px;">
-                <strong style="color: #ff2a2a; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 1px;">Kiemelt Partnerünk</strong>
-            </div>
-            {{ render_ad(cfg.ads.kulon_hasab_ad, 'kulon_hasab') }}
         </div>
     </div>
 
@@ -426,9 +415,9 @@ ADMIN_TEMPLATE = """
                 <div><label>Tudomány & Tech</label><input type="text" name="cover_tech" value="{{ cfg.cover_links.tudomany_tech }}"></div>
             </div>
 
-            <h3>2. Kiemelt Oldalsó Hirdetési Hasáb</h3>
+            <h3>2. Kiemelt Címlapi Hirdetés (Borító alatt)</h3>
             <div class="form-group" style="border-left: 4px solid #ff2a2a;">
-                <strong style="color: #ff2a2a; font-size: 1.1rem;">DEDIKÁLT MARKETING HASÁB (JOBB OLDAL)</strong>
+                <strong style="color: #ff2a2a; font-size: 1.1rem;">KIEMELT CÍMLAPI BANNER</strong>
                 <div class="ad-row">
                     <div style="width: 180px;">
                         <label>Típus</label>
@@ -449,11 +438,11 @@ ADMIN_TEMPLATE = """
                 </div>
             </div>
 
-            <h3>3. A 8 Sorszámozott Reklámfelület Kezelése</h3>
+            <h3>3. A 9 Sorszámozott Reklámfelület Kezelése</h3>
             {% set ad_keys = [
                 ('egyes_ad', 'Egyes Felület'), ('kettes_ad', 'Kettes Felület'), ('harmas_ad', 'Hármas Felület'),
                 ('negyes_ad', 'Negyes Felület'), ('otos_ad', 'Ötös Felület'), ('hatos_ad', 'Hatos Felület'),
-                ('hetes_ad', 'Hetes Felület'), ('nyolcas_ad', 'Nyolcas Felület')
+                ('hetes_ad', 'Hetes Felület'), ('nyolcas_ad', 'Nyolcas Felület'), ('kilences_ad', 'Kilences Felület')
             ] %}
             {% for key, label in ad_keys %}
             <div class="form-group">
@@ -541,8 +530,8 @@ def admin():
         current_config["ads"]["kulon_hasab_ad"]["content"] = request.form.get("kulon_hasab_ad_content")
         current_config["ads"]["kulon_hasab_ad"]["url"] = request.form.get("kulon_hasab_ad_url")
         
-        # PONTOSAN 8 ADATMEZŐ MENTÉSI FOLYAMATA
-        ad_keys = ['egyes_ad', 'kettes_ad', 'harmas_ad', 'negyes_ad', 'otos_ad', 'hatos_ad', 'hetes_ad', 'nyolcas_ad']
+        # MINDA 9 ADATMEZŐ PONTOS MENTÉSI FOLYAMATA
+        ad_keys = ['egyes_ad', 'kettes_ad', 'harmas_ad', 'negyes_ad', 'otos_ad', 'hatos_ad', 'hetes_ad', 'nyolcas_ad', 'kilences_ad']
         for key in ad_keys:
             current_config["ads"][key]["type"] = request.form.get(f"{key}_type")
             current_config["ads"][key]["content"] = request.form.get(f"{key}_content")
