@@ -9,6 +9,7 @@ app.secret_key = "twn_super_secret_key_for_session"
 CONFIG_FILE = "twn_config.json"
 ADMIN_PASSWORD = "twnadmin2026"
 
+# 🔌 PONTOSAN 8 DARAB SORSZÁMOZOTT CSATLAKOZÓ ÉS A KÜLÖN HASÁB
 DEFAULT_CONFIG = {
     "cover_links": {
         "kulfold_politika": "https://twnnews.hu",
@@ -25,7 +26,6 @@ DEFAULT_CONFIG = {
         "hatos_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hatos helyfoglalás", "url": "/hirdetes"},
         "hetes_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hetes helyfoglalás", "url": "/hirdetes"},
         "nyolcas_ad": {"type": "text", "content": "Saját Hirdetési Felület — Nyolcas helyfoglalás", "url": "/hirdetes"},
-        "kilences_ad": {"type": "text", "content": "Saját Hirdetési Felület — Kilences helyfoglalás", "url": "/hirdetes"},
         "kulon_hasab_ad": {"type": "text", "content": "Kiemelt Oldalsó Hirdetési Hasáb — Helyfoglalás", "url": "/hirdetes"}
     }
 }
@@ -44,6 +44,7 @@ def load_config():
 def save_config(config):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=4)
+
 HIRCATORNAK = {
     "Belföld": [
         {"id": "1", "name": "Origo", "site": "https://origo.hu"}, 
@@ -205,6 +206,7 @@ HTML_TEMPLATE = AD_MACRO + """
 HTML_TEMPLATE += """
 <body>
     <div class="three-column-grid-container">
+        <!-- ================= BAL HASÁB ================= -->
         <div class="side-column-stream">
             <div class="rovat-section" id="vallas">
                 <div class="rovat-title">Hit & Erkölcs</div>
@@ -234,15 +236,12 @@ HTML_TEMPLATE += """
                     </div>
                     {% if loop.index == 1 %}
                         {{ render_ad(cfg.ads.harmas_ad, 'harmas') }}
-                    {% elif loop.index == 2 %}
-                        {{ render_ad(cfg.ads.negyes_ad, 'negyes') }}
-                    {% else %}
-                        {{ render_ad(cfg.ads.otos_ad, 'otos') }}
                     {% endif %}
                 {% endfor %}
             </div>
         </div>
         
+        <!-- ================= KÖZÉPSŐ HASÁB ================= -->
         <div class="center-news-stream">
             <div class="main-magazine-cover">
                 <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
@@ -262,6 +261,11 @@ HTML_TEMPLATE += """
                                 <div class="cikk-row"><a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a></div>
                             {% endfor %}
                         </div>
+                        {% if loop.index == 1 %}
+                            {{ render_ad(cfg.ads.negyes_ad, 'negyes') }}
+                        {% elif loop.index == 2 %}
+                            {{ render_ad(cfg.ads.otos_ad, 'otos') }}
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -276,11 +280,17 @@ HTML_TEMPLATE += """
                                 <div class="cikk-row"><a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a></div>
                             {% endfor %}
                         </div>
+                        {% if loop.index == 1 %}
+                            {{ render_ad(cfg.ads.hatos_ad, 'hatos') }}
+                        {% elif loop.index == 2 %}
+                            {{ render_ad(cfg.ads.hetes_ad, 'hetes') }}
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
         </div>
         
+        <!-- ================= JOBB HASÁB ================= -->
         <div class="side-column-stream">
             <div class="rovat-section" id="tech">
                 <div class="rovat-title">Család & Tech</div>
@@ -292,13 +302,7 @@ HTML_TEMPLATE += """
                         {% endfor %}
                     </div>
                     {% if loop.index == 1 %}
-                        {{ render_ad(cfg.ads.hatos_ad, 'hatos') }}
-                    {% elif loop.index == 2 %}
-                        {{ render_ad(cfg.ads.hetes_ad, 'hetes') }}
-                    {% elif loop.index == 3 %}
                         {{ render_ad(cfg.ads.nyolcas_ad, 'nyolcas') }}
-                    {% else %}
-                        {{ render_ad(cfg.ads.kilences_ad, 'kilences') }}
                     {% endif %}
                 {% endfor %}
             </div>
@@ -343,7 +347,179 @@ HTML_TEMPLATE += """
 </body>
 </html>
 """
-        # 1. Ha nincs belépve, ezt az űrlapot mutatjuk neki:
+JOGI_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ cim }} — THE WEEKLY TWN NEWS</title>
+    <style>
+        body { font-family: sans-serif; background-color: #1e293b; color: #fff; padding: 40px 20px; line-height: 1.6; }
+        .box { max-width: 800px; margin: 0 auto; background: #0f172a; padding: 40px; border-radius: 8px; border: 1px solid #475569; }
+        h1 { color: #38bdf8; border-bottom: 2px solid #38bdf8; padding-bottom: 10px; }
+        .back { display: inline-block; margin-top: 30px; background: #ff2a2a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>{{ cim }}</h1>
+        <div>{{ tartalom | safe }}</div>
+        <a href="/" class="back">⬅ Vissza a főoldalra</a>
+    </div>
+</body>
+</html>
+"""
+
+MARKETING_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Hirdessen a TWN News-on</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1e293b; color: #fff; text-align: center; padding: 50px 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #0f172a; padding: 30px; border-radius: 8px; border: 1px solid #475569; }
+        h1 { color: #38bdf8; }
+        p { line-height: 1.6; color: #cbd5e1; }
+        .back-btn { display: inline-block; margin-top: 20px; background: #ff2a2a; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TWN News Médiaajánlat</h1>
+        <p>Szeretné termékét, szolgáltatását vagy hirdetését elhelyezni a felületünkön?</p>
+        <p>Kapcsolatfelvétel: <strong>info@twnnews.hu</strong></p>
+        <a href="/" class="back-btn">⬅ Vissza a címlapra</a>
+    </div>
+</body>
+</html>
+"""
+
+ADMIN_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>TWN News — Szuper Admin</title>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: #fff; padding: 20px; }
+        .panel { max-width: 800px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 8px; border: 1px solid #475569; }
+        h2, h3 { color: #38bdf8; border-bottom: 1px solid #475569; padding-bottom: 8px; }
+        .form-group { margin-bottom: 20px; background: #151f32; padding: 15px; border-radius: 6px; border-left: 4px solid #2ea6f2; }
+        .ad-row { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 8px; }
+        .ad-col { flex: 1; min-width: 200px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #cbd5e1; font-size: 0.85rem; text-transform: uppercase; }
+        input[type="text"], select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #475569; background: #0f172a; color: #fff; box-sizing: border-box; }
+        .btn-save { background: #ff2a2a; color: #fff; border: 0; padding: 15px 25px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 1.1rem; width: 100%; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <a href="/admin/logout" style="float:right; color:#ff2a2a; text-decoration:none; font-weight:bold;">Kijelentkezés ✖</a>
+        <h2>TWN News Szuper Vezérlőpult</h2>
+        <form method="POST">
+            <h3>1. Kattintható Magazinborító Linkek</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; background:#151f32; padding:15px; border-radius:6px; margin-bottom:25px;">
+                <div><label>Külföld & Politika</label><input type="text" name="cover_kulfold" value="{{ cfg.cover_links.kulfold_politika }}"></div>
+                <div><label>VENIA-SOKK</label><input type="text" name="cover_venia" value="{{ cfg.cover_links.venia_sokk }}"></div>
+                <div><label>Vallás & Hit</label><input type="text" name="cover_vallas" value="{{ cfg.cover_links.vallas_hit }}"></div>
+                <div><label>Tudomány & Tech</label><input type="text" name="cover_tech" value="{{ cfg.cover_links.tudomany_tech }}"></div>
+            </div>
+
+            <h3>2. Kiemelt Oldalsó Hirdetési Hasáb</h3>
+            <div class="form-group" style="border-left: 4px solid #ff2a2a;">
+                <strong style="color: #ff2a2a; font-size: 1.1rem;">DEDIKÁLT MARKETING HASÁB (JOBB OLDAL)</strong>
+                <div class="ad-row">
+                    <div style="width: 180px;">
+                        <label>Típus</label>
+                        <select name="kulon_hasab_ad_type">
+                            <option value="text" {% if cfg.ads.kulon_hasab_ad.type == 'text' %}selected{% endif %}>Sima Szöveg</option>
+                            <option value="image" {% if cfg.ads.kulon_hasab_ad.type == 'image' %}selected{% endif %}>Banner (Kép URL)</option>
+                            <option value="video" {% if cfg.ads.kulon_hasab_ad.type == 'video' %}selected{% endif %}>Google Videó (Direct MP4 URL)</option>
+                        </select>
+                    </div>
+                    <div class="ad-col">
+                        <label>Tartalom</label>
+                        <input type="text" name="kulon_hasab_ad_content" value="{{ cfg.ads.kulon_hasab_ad.content }}">
+                    </div>
+                    <div class="ad-col">
+                        <label>Cél URL</label>
+                        <input type="text" name="kulon_hasab_ad_url" value="{{ cfg.ads.kulon_hasab_ad.url }}">
+                    </div>
+                </div>
+            </div>
+
+            <h3>3. A 8 Sorszámozott Reklámfelület Kezelése</h3>
+            {% set ad_keys = [
+                ('egyes_ad', 'Egyes Felület'), ('kettes_ad', 'Kettes Felület'), ('harmas_ad', 'Hármas Felület'),
+                ('negyes_ad', 'Negyes Felület'), ('otos_ad', 'Ötös Felület'), ('hatos_ad', 'Hatos Felület'),
+                ('hetes_ad', 'Hetes Felület'), ('nyolcas_ad', 'Nyolcas Felület')
+            ] %}
+            {% for key, label in ad_keys %}
+            <div class="form-group">
+                <strong style="color: #2ea6f2; font-size: 1.1rem;">{{ label }}</strong>
+                <div class="ad-row">
+                    <div style="width: 180px;">
+                        <label>Típus</label>
+                        <select name="{{ key }}_type">
+                            <option value="text" {% if cfg.ads[key].type == 'text' %}selected{% endif %}>Sima Szöveg</option>
+                            <option value="image" {% if cfg.ads[key].type == 'image' %}selected{% endif %}>Banner (Kép URL)</option>
+                            <option value="video" {% if cfg.ads[key].type == 'video' %}selected{% endif %}>Google Videó (Direct MP4 URL)</option>
+                        </select>
+                    </div>
+                    <div class="ad-col">
+                        <label>Tartalom</label>
+                        <input type="text" name="{{ key }}_content" value="{{ cfg.ads[key].content }}">
+                    </div>
+                    <div class="ad-col">
+                        <label>Cél URL</label>
+                        <input type="text" name="{{ key }}_url" value="{{ cfg.ads[key].url }}">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn-save">💾 Összes Beállítás Mentése És Élesítése</button>
+        </form>
+    </div>
+</body>
+</html>
+"""
+@app.route("/")
+def index():
+    global STORED_NEWS
+    if not STORED_NEWS:
+        STORED_NEWS = scrape_all_news()
+    current_config = load_config()
+    return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, cfg=current_config)
+
+@app.route("/hirdetes")
+def hirdetes():
+    return render_template_string(MARKETING_TEMPLATE)
+
+@app.route("/impresszum")
+def impresszum():
+    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved]<br>E-mail: info@twnnews.hu</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Impresszum", tartalom=szoveg)
+
+@app.route("/aszf")
+def aszf():
+    szoveg = "<h3>1. Általános feltételek</h3><p>A használattal elfogadja az ÁSZF-et.</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Általános Szerződési Feltételek (ÁSZF)", tartalom=szoveg)
+
+@app.route("/adatvedelem")
+def adatvedelem():
+    szoveg = "<h3>1. Adatkezelés</h3><p>A TWN News megfelel a GDPR szabályoknak.</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Adatvédelmi Tájékoztató (GDPR)", tartalom=szoveg)
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    if not session.get("logged_in"):
+        if request.method == "POST":
+            if request.form.get("password") == ADMIN_PASSWORD:
+                session["logged_in"] = True
+                return redirect(url_for("admin"))
+            return '<h3>Hibás jelszó! <a href="/admin">Újra</a></h3>'
+        
         admin_login_html = (
             '<body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">'
             '<form method="POST" style="background:#1e293b; display:inline-block; padding:30px; border-radius:8px; border:1px solid #475569;">'
@@ -354,7 +530,6 @@ HTML_TEMPLATE += """
         )
         return admin_login_html
     
-    # 2. Ha már be van lépve, betöltjük a konfigurációt és kezeljük a mentést:
     current_config = load_config()
     if request.method == "POST":
         current_config["cover_links"]["kulfold_politika"] = request.form.get("cover_kulfold")
@@ -366,7 +541,8 @@ HTML_TEMPLATE += """
         current_config["ads"]["kulon_hasab_ad"]["content"] = request.form.get("kulon_hasab_ad_content")
         current_config["ads"]["kulon_hasab_ad"]["url"] = request.form.get("kulon_hasab_ad_url")
         
-        ad_keys = ['egyes_ad', 'kettes_ad', 'harmas_ad', 'negyes_ad', 'otos_ad', 'hatos_ad', 'hetes_ad', 'nyolcas_ad', 'kilences_ad']
+        # PONTOSAN 8 ADATMEZŐ MENTÉSI FOLYAMATA
+        ad_keys = ['egyes_ad', 'kettes_ad', 'harmas_ad', 'negyes_ad', 'otos_ad', 'hatos_ad', 'hetes_ad', 'nyolcas_ad']
         for key in ad_keys:
             current_config["ads"][key]["type"] = request.form.get(f"{key}_type")
             current_config["ads"][key]["content"] = request.form.get(f"{key}_content")
