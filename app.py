@@ -361,7 +361,7 @@ HTML_TEMPLATE = """
                 </div>
             </div>
         </header>
-        
+        <div class="nav-bar">
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
