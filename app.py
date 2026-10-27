@@ -595,7 +595,8 @@ HTML_TEMPLATE = """
     <footer>
         <div class="footer-top-container">
             <div class="footer-logo-area">
-                <img src="/twn_logo.png" alt="The Weekly TWN News" style="max-width: 180px; height: auto; display: block; margin: 0 auto; padding: 5px;">
+                <img src="/twn_logo.png" alt="The Weekly TWN News" style="max-width: 240px; height: auto; display: block; margin: 0 auto; background: white; padding: 12px 45px; border-radius: 6px; box-sizing: border-box;">
+
 
 
             </div>
