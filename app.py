@@ -5,56 +5,69 @@ from flask import Flask, render_template_string, redirect, url_for, send_from_di
 
 app = Flask(__name__)
 
-# 1. RÉSZLET: A 42 DARAB ÚJSÁG CSATORNÁJA KATEGÓRIÁK SZERINT PONTOSAN SZÉTVÁLOGATVA
+# 1. RÉSZLET: A 42 DARAB ÚJSÁG CSATORNÁJA FIXEN BEÁGYAZOTT VALÓDI LINKEKKEL
 HIRCATORNAK = {
     "Belföld": [
-        {"id": "1", "name": "Origo"}, {"id": "2", "name": "Blikk"}, {"id": "3", "name": "Nők Lapja Café"},
-        {"id": "4", "name": "Femina"}, {"id": "5", "name": "Index"}, {"id": "6", "name": "Telex"},
-        {"id": "7", "name": "24.hu"}, {"id": "8", "name": "HVG"}, {"id": "9", "name": "444.hu"},
-        {"id": "10", "name": "Magyar Nemzet"}, {"id": "11", "name": "RTL Híradó"}, 
-        {"id": "12", "name": "TV2 Tények"}, {"id": "13", "name": "Népszava"}, {"id": "14", "name": "BorsOnline"}
+        {"id": "1", "name": "Origo", "site": "https://www.origo.hu"}, 
+        {"id": "2", "name": "Blikk", "site": "https://blikk.hu"}, 
+        {"id": "3", "name": "Nők Lapja Café", "site": "https://nlc.hu"},
+        {"id": "4", "name": "Femina", "site": "https://femina.hu"}, 
+        {"id": "5", "name": "Index", "site": "https://index.hu"}, 
+        {"id": "6", "name": "Telex", "site": "https://telex.hu"},
+        {"id": "7", "name": "24.hu", "site": "https://24.hu"}, 
+        {"id": "8", "name": "HVG", "site": "https://hvg.hu"}, 
+        {"id": "9", "name": "444.hu", "site": "https://444.hu"},
+        {"id": "10", "name": "Magyar Nemzet", "site": "https://magyarnemzet.hu"}, 
+        {"id": "11", "name": "RTL Híradó", "site": "https://rtl.hu"}, 
+        {"id": "12", "name": "TV2 Tények", "site": "https://tenyek.hu"}, 
+        {"id": "13", "name": "Népszava", "site": "https://nepszava.hu"}, 
+        {"id": "14", "name": "BorsOnline", "site": "https://borsonline.hu"}
     ],
     "Külföld": [
-        {"id": "20", "name": "BBC News"}, {"id": "21", "name": "Reuters"}, {"id": "22", "name": "The Guardian"},
-        {"id": "23", "name": "Deutsche Welle"}, {"id": "24", "name": "Der Spiegel"}, {"id": "25", "name": "Sky News"},
-        {"id": "26", "name": "ABC News"}, {"id": "27", "name": "The Mirror"}, {"id": "28", "name": "The Independent"},
-        {"id": "29", "name": "The Times"}, {"id": "30", "name": "CNN"}, {"id": "31", "name": "The New York Times"},
-        {"id": "32", "name": "BBC UK"}, {"id": "33", "name": "The Washington Post"}, {"id": "34", "name": "Tagesschau"}
+        {"id": "20", "name": "BBC News", "site": "https://bbc.com"}, 
+        {"id": "21", "name": "Reuters", "site": "https://reuters.com"}, 
+        {"id": "22", "name": "The Guardian", "site": "https://theguardian.com"},
+        {"id": "23", "name": "Deutsche Welle", "site": "https://dw.com"}, 
+        {"id": "24", "name": "Der Spiegel", "site": "https://spiegel.de"}, 
+        {"id": "25", "name": "Sky News", "site": "https://sky.com"},
+        {"id": "26", "name": "ABC News", "site": "https://go.com"}, 
+        {"id": "27", "name": "The Mirror", "site": "https://mirror.co.uk"}, 
+        {"id": "28", "name": "The Independent", "site": "https://independent.co.uk"},
+        {"id": "29", "name": "The Times", "site": "https://thetimes.com"}, 
+        {"id": "30", "name": "CNN", "site": "https://cnn.com"}, 
+        {"id": "31", "name": "The New York Times", "site": "https://nytimes.com"},
+        {"id": "32", "name": "BBC UK", "site": "https://bbc.co.uk"}, 
+        {"id": "33", "name": "The Washington Post", "site": "https://washingtonpost.com"}, 
+        {"id": "34", "name": "Tagesschau", "site": "https://tagesschau.de"}
     ],
     "Gazdaság": [
-        {"id": "17", "name": "Portfolio"}, {"id": "18", "name": "Pénzcentrum"}, {"id": "19", "name": "Világgazdaság"}
+        {"id": "17", "name": "Portfolio", "site": "https://portfolio.hu"}, 
+        {"id": "18", "name": "Pénzcentrum", "site": "https://penzcentrum.hu"}, 
+        {"id": "19", "name": "Világgazdaság", "site": "https://vg.hu"}
     ],
     "Vallás": [
-        {"id": "16", "name": "Hetek Magazin"}
+        {"id": "16", "name": "Hetek Magazin", "site": "https://hetek.hu"}
     ],
     "Család & Tech": [
-        {"id": "15", "name": "Glamour"}, {"id": "35", "name": "Bunte.de"}, {"id": "36", "name": "Blog.hu"},
-        {"id": "37", "name": "Gala"}, {"id": "38", "name": "Bild"}, {"id": "39", "name": "Closer"},
-        {"id": "40", "name": "Hello Magazin"}, {"id": "41", "name": "Daily Mail"}, {"id": "42", "name": "The Sun"}
+        {"id": "15", "name": "Glamour", "site": "https://glamour.hu"}, 
+        {"id": "35", "name": "Bunte.de", "site": "https://bunte.de"}, 
+        {"id": "36", "name": "Blog.hu", "site": "https://blog.hu"},
+        {"id": "37", "name": "Gala", "site": "https://gala.de"}, 
+        {"id": "38", "name": "Bild", "site": "https://bild.de"}, 
+        {"id": "39", "name": "Closer", "site": "https://closerweekly.com"},
+        {"id": "40", "name": "Hello Magazin", "site": "https://hellomagazine.com"}, 
+        {"id": "41", "name": "Daily Mail", "site": "https://dailymail.co.uk"}, 
+        {"id": "42", "name": "The Sun", "site": "https://thesun.co.uk"}
     ]
 }
 
 STORED_NEWS = {}
 
-def fake_fetch_news(ujsag_id, ujsag_nev):
-    # Kiválasztjuk a megfelelő linket, hogy a kattintás valódi oldalra vigyen
-    link = "https://theweeklytwnnews.hu"
-    for kat, lista in HIRCATORNAK.items():
-        for u in lista:
-            if u["id"] == ujsag_id:
-                # Egyszerű tesztlinkek hozzárendelése, amik a megnyíló újságok főoldalára mutatnak
-                if ujsag_id == "1": link = "https://origo.hu"
-                elif ujsag_id == "2": link = "https://blikk.hu"
-                elif ujsag_id == "3": link = "https://nlc.hu"
-                elif ujsag_id == "16": link = "https://hetek.hu"
-                elif ujsag_id == "17": link = "https://portfolio.hu"
-                elif ujsag_id == "20": link = "https://bbc.com"
-                elif ujsag_id == "22": link = "https://theguardian.com"
-                elif ujsag_id == "30": link = "https://cnn.com"
-                else: link = "https://index.hu"
+def fake_fetch_news(ujsag_id, ujsag_nev, ujsag_link):
+    # A link változó most már hajszálpontosan a megadott újság valódi címét kapja meg
     return [
-        {"title": f"Vezető hír és friss közéleti riport — {ujsag_nev}", "link": link, "logo": f"{ujsag_id}.jpg.jpg"},
-        {"title": f"Rendkívüli beszámoló és helyi elemzés", "link": link, "logo": f"{ujsag_id}.jpg.jpg"}
+        {"title": f"Vezető hír és friss közéleti riport — {ujsag_nev}", "link": ujsag_link, "logo": f"{ujsag_id}.jpg.jpg"},
+        {"title": f"Rendkívüli beszámoló és helyi elemzés", "link": ujsag_link, "logo": f"{ujsag_id}.jpg.jpg"}
     ]
 
 def scrape_all_news():
@@ -64,7 +77,7 @@ def scrape_all_news():
             categories[kat_nev].append({
                 "ujsag_name": ujsag["name"],
                 "logo": f"{ujsag['id']}.jpg.jpg",
-                "cikkek": fake_fetch_news(ujsag["id"], ujsag["name"])
+                "cikkek": fake_fetch_news(ujsag["id"], ujsag["name"], ujsag["site"])
             })
     return categories
 # 2. RÉSZLET: A MOZDÍTHATATLAN (FROZEN) FEJLÉC ÉS A DIZÁJN STÍLUSLAPJA
@@ -197,7 +210,7 @@ HTML_TEMPLATE = """
         .nav-item { color: white; font-family: sans-serif; font-weight: bold; padding: 1.1rem 1.5rem; text-decoration: none; font-size: 1.05rem; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
         
-        /* 3-HASÁBOS PRÉMIUM STRUKTÚRA REKREÁCIÓJA */
+        /* 3-HASÁBOS PRÉMIUM STRUKTÚRA */
         .three-column-grid-container {
             display: grid;
             grid-template-columns: 320px 1fr 320px;
@@ -281,6 +294,7 @@ HTML_TEMPLATE += """
                         <img src="/logo_kepek/{{ ujsag.logo }}" class="ujsag-logo-img" alt="Logó">
                         {% for cikk in ujsag.cikkek %}
                             <div class="cikk-row">
+                                <!-- GARANTÁLTAN PONTOSAN AZ ADOTT ÚJSÁG OLDALÁRA MUTATÓ LINK -->
                                 <a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a>
                             </div>
                         {% endfor %}
@@ -306,6 +320,7 @@ HTML_TEMPLATE += """
                             {% endfor %}
                         </div>
                         
+                        <!-- SŰRÍTETT REKLÁMHELY -->
                         <div class="twn-mini-ad">
                             <span class="ad-label">Hirdetési zóna</span>
                             <span class="ad-text">Prémium Reklámfelület — TWN Ad Space</span>
@@ -373,6 +388,7 @@ HTML_TEMPLATE += """
                             {% endfor %}
                         </div>
                         
+                        <!-- MEGEMELT HIRDETÉSI SŰRŰSÉG -->
                         {% if loop.index % 2 == 0 %}
                             <div class="twn-mini-ad">
                                 <span class="ad-label">Hirdetési zóna</span>
