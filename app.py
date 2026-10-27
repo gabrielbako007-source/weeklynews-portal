@@ -594,7 +594,7 @@ HTML_TEMPLATE = """
     </div> <!-- GRID LEZÁRÁSA -->
     <footer>
         <div class="footer-top-container">
-            <img src="/twn_logo.png" alt="The Weekly TWN News" style="max-width: 380px; width: 100%; height: auto; display: block; margin: 0 auto; padding: 15px 0; mix-blend-mode: multiply;">
+            <img src="/twn_logo.png" alt="The Weekly TWN News" style="max-width: 380px; width: 100%; height: auto; display: block; margin: 0 auto; background-color: #92a4b6; padding: 8px 20px; border-radius: 4px; box-sizing: border-box;">
 
 
 
