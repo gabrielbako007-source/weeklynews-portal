@@ -119,7 +119,6 @@ HTML_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>THE WEEKLY TWN NEWS</title>
     <style>
-        @import url('https://googleapis.com');
         body { 
             font-family: 'Arial', sans-serif; 
             margin: 0; padding: 0; 
@@ -273,6 +272,9 @@ HTML_TEMPLATE = """
         .twn-mini-ad { background-color: #1a202c; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; width: 100%; box-sizing: border-box; text-align: center; margin: 10px 0; overflow: hidden; }
         .ad-label { font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
         .ad-text { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; text-decoration: none; }
+        .ad-img { width: 100%; height: auto; border-radius: 4px; display: block; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 4px; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
         footer {
             background-color: #737373; 
@@ -285,7 +287,7 @@ HTML_TEMPLATE = """
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             flex-wrap: wrap;
             gap: 30px;
         }
@@ -319,6 +321,7 @@ HTML_TEMPLATE = """
             padding: 25px 20px;
             font-size: 0.8rem;
             color: #a3a3a3;
+            line-height: 1.6;
         }
         .footer-bottom-container { max-width: 1400px; margin: 0 auto; }
     </style>
@@ -356,7 +359,7 @@ HTML_TEMPLATE += """
     </div>
 
     <div class="three-column-grid-container">
-        <!-- BAL HASÁB -->
+        <!-- ================= BAL HASÁB ================= -->
         <div class="side-column-stream">
             <div class="rovat-section" id="vallas">
                 <div class="rovat-title">Hit & Erkölcs</div>
@@ -369,9 +372,18 @@ HTML_TEMPLATE += """
                             </div>
                         {% endfor %}
                     </div>
+                    
                     <div class="twn-mini-ad">
                         <span class="ad-label">Hirdetés / Premium Ad</span>
-                        <a href="{{ cfg.ads.vallas_ad.url }}" target="_blank" class="ad-text">{{ cfg.ads.vallas_ad.content }}</a>
+                        {% if cfg.ads.vallas_ad.type == 'youtube' %}
+                            <div class="video-container">
+                                <iframe src="https://youtube.com{{ cfg.ads.vallas_ad.content }}" allowfullscreen></iframe>
+                            </div>
+                        {% elif cfg.ads.vallas_ad.type == 'image' %}
+                            <a href="{{ cfg.ads.vallas_ad.url }}" target="_blank"><img src="{{ cfg.ads.vallas_ad.content }}" class="ad-img"></a>
+                        {% else %}
+                            <a href="{{ cfg.ads.vallas_ad.url }}" target="_blank" class="ad-text">{{ cfg.ads.vallas_ad.content }}</a>
+                        {% endif %}
                     </div>
                 {% endfor %}
             </div>
@@ -388,16 +400,25 @@ HTML_TEMPLATE += """
                                 </div>
                             {% endfor %}
                         </div>
+                        
                         <div class="twn-mini-ad">
                             <span class="ad-label">Hirdetés / Premium Ad</span>
-                            <a href="{{ cfg.ads.gazdasag_ad.url }}" target="_blank" class="ad-text">{{ cfg.ads.gazdasag_ad.content }}</a>
+                            {% if cfg.ads.gazdasag_ad.type == 'youtube' %}
+                                <div class="video-container">
+                                    <iframe src="https://youtube.com{{ cfg.ads.gazdasag_ad.content }}" allowfullscreen></iframe>
+                                </div>
+                            {% elif cfg.ads.gazdasag_ad.type == 'image' %}
+                                <a href="{{ cfg.ads.gazdasag_ad.url }}" target="_blank"><img src="{{ cfg.ads.gazdasag_ad.content }}" class="ad-img"></a>
+                            {% else %}
+                                <a href="{{ cfg.ads.gazdasag_ad.url }}" target="_blank" class="ad-text">{{ cfg.ads.gazdasag_ad.content }}</a>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
-        <!-- KÖZÉPSŐ HASÁB -->
+        <!-- ================= KÖZÉPSŐ HASÁB ================= -->
         <div class="center-news-stream">
             <div class="main-magazine-cover">
                 <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
@@ -440,7 +461,7 @@ HTML_TEMPLATE += """
             </div>
         </div>
 
-        <!-- JOBB HASÁB -->
+        <!-- ================= JOBB HASÁB ================= -->
         <div class="side-column-stream">
             <div class="rovat-section" id="tech">
                 <div class="rovat-title">Család & Tech</div>
@@ -454,17 +475,26 @@ HTML_TEMPLATE += """
                                 </div>
                             {% endfor %}
                         </div>
+                        
                         {% if loop.index % 2 == 0 %}
                             <div class="twn-mini-ad">
                                 <span class="ad-label">Hirdetés / Premium Ad</span>
-                                <a href="{{ cfg.ads.tech_ad.url }}" target="_blank" class="ad-text">{{ cfg.ads.tech_ad.content }}</a>
+                                {% if cfg.ads.tech_ad.type == 'youtube' %}
+                                    <div class="video-container">
+                                        <iframe src="https://youtube.com{{ cfg.ads.tech_ad.content }}" allowfullscreen></iframe>
+                                    </div>
+                                {% elif cfg.ads.tech_ad.type == 'image' %}
+                                    <a href="{{ cfg.ads.tech_ad.url }}" target="_blank"><img src="{{ cfg.ads.tech_ad.content }}" class="ad-img"></a>
+                                {% else %}
+                                    <a href="{{ cfg.ads.tech_ad.url }}" target="_blank" class="ad-text">{{ cfg.ads.tech_ad.content }}</a>
+                                {% endif %}
                             </div>
                         {% endif %}
                     {% endfor %}
                 </div>
             </div>
         </div>
-    </div>
+    </div> <!-- GRID LEZÁRÁSA -->
 
     <footer>
         <div class="footer-top-container">
@@ -481,15 +511,9 @@ HTML_TEMPLATE += """
             </div>
         </div>
     </footer>
+    
     <div class="footer-bottom-dark-bar">
         <div class="footer-bottom-container">
-            <p>Nemzeti Média- és Hírközlési Hatóság nyilvántartása folyamatban. | info@twnnews.hu | www.twnnews.hu</p>
-            <p style="margin-top: 10px; font-size: 0.75rem; color: #737373;">Az oldalon megjelenő külső hírek az automatizált aggregátor rendszeren keresztül. © 2026 TWNNEWS Kft.</p>
-        </div>
-    </div>
-</body>
-</html>
-"""
 # ================= JOGI ÉS MARKETING SABLONOK =================
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
@@ -541,6 +565,50 @@ MARKETING_TEMPLATE = """
 </html>
 """
 
+ADMIN_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>TWN News — Szuper Admin</title>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: #fff; padding: 20px; }
+        .panel { max-width: 700px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 8px; border: 1px solid #475569; }
+        h2, h3 { color: #38bdf8; border-bottom: 1px solid #475569; padding-bottom: 8px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #cbd5e1; font-size: 0.9rem; }
+        input[type="text"], select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #475569; background: #0f172a; color: #fff; box-sizing: border-box; }
+        .btn-save { background: #2ea6f2; color: #fff; border: 0; padding: 12px 25px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 1rem; width: 100%; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <a href="/admin/logout" style="float:right; color:#ff2a2a; text-decoration:none; font-weight:bold;">Kijelentkezés ✖</a>
+        <h2>TWN News Vezérlőpult</h2>
+        <form method="POST">
+            <h3>1. Kattintható Magazinborító Linkek</h3>
+            <div class="form-group"><label>Külföld & Politika</label><input type="text" name="cover_kulfold" value="{{ cfg.cover_links.kulfold_politika }}"></div>
+            <div class="form-group"><label>VENIA-SOKK</label><input type="text" name="cover_venia" value="{{ cfg.cover_links.venia_sokk }}"></div>
+            <div class="form-group"><label>Vallás & Hit</label><input type="text" name="cover_vallas" value="{{ cfg.cover_links.vallas_hit }}"></div>
+            <div class="form-group"><label>Tudomány & Tech</label><input type="text" name="cover_tech" value="{{ cfg.cover_links.tudomany_tech }}"></div>
+            <h3>2. Reklámhelyek Videó és Banner Kezelése</h3>
+            <div class="form-group">
+                <label>Vallás Hasáb Hirdetés Típusa</label>
+                <select name="vallas_ad_type">
+                    <option value="text" {% if cfg.ads.vallas_ad.type == 'text' %}selected{% endif %}>Sima Szöveg</option>
+                    <option value="image" {% if cfg.ads.vallas_ad.type == 'image' %}selected{% endif %}>Banner (Kép URL)</option>
+                    <option value="youtube" {% if cfg.ads.vallas_ad.type == 'youtube' %}selected{% endif %}>YouTube Videó (ID)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Vallás Reklám Tartalom (Szöveg / Banner link / YouTube ID)</label><input type="text" name="vallas_ad_content" value="{{ cfg.ads.vallas_ad.content }}"></div>
+            <div class="form-group"><label>Vallás Kattintási Cél (Cél URL)</label><input type="text" name="vallas_ad_url" value="{{ cfg.ads.vallas_ad.url }}"></div>
+            <button type="submit" class="btn-save">💾 Beállítások mentése és élesítése</button>
+        </form>
+    </div>
+</body>
+</html>
+"""
+
 # ================= FLASK ÚTVONALAK (ROUTES) =================
 
 @app.route("/")
@@ -557,37 +625,17 @@ def hirdetes():
 
 @app.route("/impresszum")
 def impresszum():
-    szoveg = """
-    <p><strong>A twnnews.hu digitális híraggregátor és magazin hivatalos adatai:</strong></p>
-    <h3>Alapító-főszerkesztő és Tulajdonos:</h3>
-    <p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p>
-    <h3>Tárhelyszolgáltató adatai:</h3>
-    <p>[Tárhelyszolgáltató neve és címe]</p>
-    <h3>Felelősségi nyilatkozat az aggregált tartalomról:</h3>
-    <p>A TWN News felületén megjelenő hírek jelentős része egy automatizált rendszeren keresztül, külső sajtóorgánumok (pl. Origo, Blikk, Index, Hetek, BBC) nyilvánosan elérhető RSS csatornáiból származik. Ezen külső hírek valóságtartalmáért, pontos szövegezéséért a TWN News szerkesztősége felelősséget nem vállal. A linkekre kattintva az olvasó minden esetben elhagyja a TWN News felületét és az eredeti tartalomgyártó oldalára navigál át.</p>
-    """
+    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p><h3>Felelősségi nyilatkozat:</h3><p>A TWN News felületén megjelenő hírek jelentős része egy automatizált rendszeren keresztül, külső sajtóorgánumok nyilvánosan elérhető RSS csatornáiból származik.</p>"
     return render_template_string(JOGI_TEMPLATE, cim="Impresszum", tartalom=szoveg)
 
 @app.route("/aszf")
 def aszf():
-    szoveg = """
-    <h3>1. Általános feltételek</h3>
-    <p>A twnnews.hu használatával minden látogató automatikusan elfogadja a jelen Általános Szerződési Feltételeket. A híraggregátor szolgáltatás használata ingyenes.</p>
-    <h3>2. Hirdetési szerződések</h3>
-    <p>A hasábok között és a felületeken megjelenő egyedi reklámhelyeket a Hirdetők az Adminisztrációs felületen vagy közvetlen megállapodás útján vásárolhatják meg. A Hirdető teljes jogi felelősséget vállal az általa beküldött képi és videós anyagok jogtisztaságáért.</p>
-    <h3>3. Szellemi tulajdon védelme</h3>
-    <p>A magazinborítón és a prémium hetilap modulban megjelenő egyedi, saját gyártású cikkek a TWN News kizárólagos szellemi tulajdonát képezik, azok másolása és utánközlése engedélyköteles.</p>
-    """
+    szoveg = "<h3>1. Általános feltételek</h3><p>A twnnews.hu használatával minden látogató automatikusan elfogadja a jelen Általános Szerződési Feltételeket.</p><h3>2. Hirdetések</h3><p>A hasábok között megjelenő egyedi reklámhelyeket a Hirdetők az Adminisztrációs felületen kezelhetik.</p>"
     return render_template_string(JOGI_TEMPLATE, cim="Általános Szerződési Feltételek (ÁSZF)", tartalom=szoveg)
 
 @app.route("/adatvedelem")
 def adatvedelem():
-    szoveg = """
-    <h3>1. Adatkezelés célja</h3>
-    <p>A TWN News kizárólag üzleti kapcsolattartás, hirdetési ajánlatkérések céljából kezel személyes adatokat (nevet és e-mail címet), amelyeket a felhasználók önkéntesen adnak meg.</p>
-    <h3>2. Sütik (Cookies) használata</h3>
-    <p>A weboldal a prémium felhasználói élmény fokozása és látogatottsági statisztikák mérése érdekében anonim sütiket helyezhet el a látogató böngészőjében. Adatvédelmi kérelmeket az info@twnnews.hu címen fogadunk.</p>
-    """
+    szoveg = "<h3>1. Adatkezelés</h3><p>A TWN News kizárólag üzleti kapcsolattartás céljából kezel személyes adatokat (nevet és e-mail címet).</p>"
     return render_template_string(JOGI_TEMPLATE, cim="Adatvédelmi Tájékoztató (GDPR)", tartalom=szoveg)
 
 @app.route("/admin", methods=["GET", "POST"])
@@ -599,7 +647,24 @@ def admin():
                 return redirect(url_for("admin"))
             return '<h3>Hibás jelszó! <a href="/admin">Újra</a></h3>'
         return '<body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;"><form method="POST" style="background:#1e293b; display:inline-block; padding:30px; border-radius:8px; border:1px solid #475569;"><label style="display:block; margin-bottom:10px;">Admin Jelszó:</label><input type="password" name="password" style="padding:8px; background:#0f172a; color:#fff; border:1px solid #475569;"><br><br><button type="submit" style="background:#ff2a2a; color:#fff; border:0; padding:8px 15px; border-radius:4px; cursor:pointer;">Belépés</button></form></body>'
-    return "<h3>Admin felület sikeresen összekötve a twn_config.json rendszerrel.</h3>"
+    
+    current_config = load_config()
+    if request.method == "POST":
+        current_config["cover_links"]["kulfold_politika"] = request.form.get("cover_kulfold")
+        current_config["cover_links"]["venia_sokk"] = request.form.get("cover_venia")
+        current_config["cover_links"]["vallas_hit"] = request.form.get("cover_vallas")
+        current_config["cover_links"]["tudomany_tech"] = request.form.get("cover_tech")
+        current_config["ads"]["vallas_ad"]["type"] = request.form.get("vallas_ad_type")
+        current_config["ads"]["vallas_ad"]["content"] = request.form.get("vallas_ad_content")
+        current_config["ads"]["vallas_ad"]["url"] = request.form.get("vallas_ad_url")
+        save_config(current_config)
+        return redirect(url_for("index"))
+    return render_template_string(ADMIN_TEMPLATE, cfg=current_config)
+
+@app.route("/admin/logout")
+def logout():
+    session["logged_in"] = False
+    return redirect(url_for("index"))
 
 @app.route('/logo_kepek/<path:filename>')
 def serve_logos(filename):
