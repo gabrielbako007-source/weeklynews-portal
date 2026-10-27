@@ -10,7 +10,6 @@ app.secret_key = "twn_super_secret_key_for_session"
 CONFIG_FILE = "twn_config.json"
 ADMIN_PASSWORD = "twnadmin2026"
 
-# Alapértelmezett konfiguráció kibővítve a 9 darab videó box adataival
 DEFAULT_CONFIG = {
     "cover_links": {
         "kulfold_politika": "https://twnnews.hu",
@@ -241,7 +240,6 @@ HTML_TEMPLATE = """
         .nav-item-marketing { color: #38bdf8; border-left: 1px solid #475569; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
         
-        /* FIX EREDETI 3 HASÁBOS RÁCS */
         .three-column-grid-container {
             display: grid;
             grid-template-columns: 320px 1fr 320px;
@@ -257,7 +255,6 @@ HTML_TEMPLATE = """
         .side-column-stream { display: flex; flex-direction: column; gap: 25px; }
         .center-news-stream { display: flex; flex-direction: column; align-items: center; }
         
-        /* FIX CÍMLAP STYLING KÖZÉPEN */
         .main-magazine-cover { 
             width: 100%; 
             max-width: 480px; 
@@ -369,6 +366,10 @@ HTML_TEMPLATE = """
             <a href="#gazdasag" class="nav-item">Gazdaság</a>
             <a href="#vallas" class="nav-item">Vallás</a>
             <a href="#tech" class="nav-item">Család & Tech</a>
+            <a href="/hirdetes" class="nav-item nav-item-marketing">💼 Hirdetés feladás</a>
+        </div>
+    </div>
+    
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
