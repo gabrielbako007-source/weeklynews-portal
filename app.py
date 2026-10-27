@@ -1,14 +1,47 @@
 import os
+import json
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, render_template_string, redirect, url_for, send_from_directory
+from flask import Flask, render_template_string, redirect, url_for, send_from_directory, request, session
 
 app = Flask(__name__)
+app.secret_key = "twn_super_secret_key_for_session"
 
-# 1. RÉSZLET: A 42 DARAB ÚJSÁG CSATORNÁJA FIXEN BEÁGYAZOTT VALÓDI LINKEKKEL
+CONFIG_FILE = "twn_config.json"
+ADMIN_PASSWORD = "twnadmin2026"
+
+DEFAULT_CONFIG = {
+    "cover_links": {
+        "kulfold_politika": "https://twnnews.hu",
+        "venia_sokk": "https://twnnews.hu",
+        "vallas_hit": "https://twnnews.hu",
+        "tudomany_tech": "https://twnnews.hu"
+    },
+    "ads": {
+        "vallas_ad": {"type": "text", "content": "Saját Hirdetési Felület — Helyfoglalás az Adminban!", "url": "/hirdetes"},
+        "gazdasag_ad": {"type": "text", "content": "Prémium Reklámfelület — TWN Ad Space", "url": "/hirdetes"},
+        "tech_ad": {"type": "text", "content": "Saját Hirdetési Felület — Eladó hirdetési hely", "url": "/hirdetes"}
+    }
+}
+
+def load_config():
+    if not os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(DEFAULT_CONFIG, f, ensure_ascii=False, indent=4)
+        return DEFAULT_CONFIG
+    try:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return DEFAULT_CONFIG
+
+def save_config(config):
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump(config, f, ensure_ascii=False, indent=4)
+
 HIRCATORNAK = {
     "Belföld": [
-        {"id": "1", "name": "Origo", "site": "https://www.origo.hu"}, 
+        {"id": "1", "name": "Origo", "site": "https://origo.hu"}, 
         {"id": "2", "name": "Blikk", "site": "https://blikk.hu"}, 
         {"id": "3", "name": "Nők Lapja Café", "site": "https://nlc.hu"},
         {"id": "4", "name": "Femina", "site": "https://femina.hu"}, 
@@ -60,11 +93,9 @@ HIRCATORNAK = {
         {"id": "42", "name": "The Sun", "site": "https://thesun.co.uk"}
     ]
 }
-
 STORED_NEWS = {}
 
 def fake_fetch_news(ujsag_id, ujsag_nev, ujsag_link):
-    # A link változó most már hajszálpontosan a megadott újság valódi címét kapja meg
     return [
         {"title": f"Vezető hír és friss közéleti riport — {ujsag_nev}", "link": ujsag_link, "logo": f"{ujsag_id}.jpg.jpg"},
         {"title": f"Rendkívüli beszámoló és helyi elemzés", "link": ujsag_link, "logo": f"{ujsag_id}.jpg.jpg"}
@@ -80,7 +111,6 @@ def scrape_all_news():
                 "cikkek": fake_fetch_news(ujsag["id"], ujsag["name"], ujsag["site"])
             })
     return categories
-# 2. RÉSZLET: A MOZDÍTHATATLAN (FROZEN) FEJLÉC ÉS A DIZÁJN STÍLUSLAPJA
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
@@ -90,16 +120,14 @@ HTML_TEMPLATE = """
     <title>THE WEEKLY TWN NEWS</title>
     <style>
         @import url('https://googleapis.com');
-
         body { 
             font-family: 'Arial', sans-serif; 
             margin: 0; padding: 0; 
-            background-color: #1e293b; /* FIX PRÉMIUM PALASZÜRKE ALAPVILÁG */
+            background-color: #1e293b; 
             color: #ffffff;
             overflow-x: hidden;
         }
         
-        /* TELJESEN RÖGZÍTETT, MOZDÍTHATATLAN FELSŐ SZEKCIÓ */
         .frozen-top-header {
             position: sticky;
             top: 0;
@@ -107,7 +135,6 @@ HTML_TEMPLATE = """
             width: 100%;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-
         header { 
             background-color: #0f172a; 
             padding: 1.5rem 1rem; 
@@ -121,12 +148,11 @@ HTML_TEMPLATE = """
             width: 100%;
         }
         
-        /* LOGÓDIZÁJN HAJSZÁLPONTOS REKREÁCIÓJA EZÜSTÖS SZÍNEKKEL */
         .logo-box-html {
             background-color: transparent;
             padding: 6px 0;
-            border-top: 1px solid #e2e8f0;    /* HAJSZÁLVÉKONY EZÜSTÖS FELSŐ CSÍK */
-            border-bottom: 1px solid #e2e8f0; /* HAJSZÁLVÉKONY EZÜSTÖS ALSÓ CSÍK */
+            border-top: 1px solid #e2e8f0;    
+            border-bottom: 1px solid #e2e8f0; 
             display: inline-flex;
             align-items: stretch;
             font-family: 'Bodoni Moda', serif;
@@ -181,17 +207,6 @@ HTML_TEMPLATE = """
             font-size: 24px;
             line-height: 1;
         }
-        .logo-twn-badge::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 12px;
-            width: 0;
-            height: 0;
-            border-width: 6px 6px 0 0;
-            border-style: solid;
-            border-color: #2ea6f2 transparent transparent transparent;
-        }
         .logo-twn-badge span:nth-child(1) { color: #111827; }
         .logo-twn-badge span:nth-child(2) { color: #ffffff; }
         .logo-twn-badge span:nth-child(3) { color: #e62129; }
@@ -206,11 +221,11 @@ HTML_TEMPLATE = """
             text-transform: uppercase;
         }
         
-        .nav-bar { background-color: #0f172a; padding: 0px 1rem; display: flex; justify-content: center; border-bottom: 1px solid #475569; }
+        .nav-bar { background-color: #0f172a; padding: 0px 1rem; display: flex; justify-content: center; border-bottom: 1px solid #475569; flex-wrap: wrap; }
         .nav-item { color: white; font-family: sans-serif; font-weight: bold; padding: 1.1rem 1.5rem; text-decoration: none; font-size: 1.05rem; }
+        .nav-item-marketing { color: #38bdf8; border-left: 1px solid #475569; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
         
-        /* 3-HASÁBOS PRÉMIUM STRUKTÚRA */
         .three-column-grid-container {
             display: grid;
             grid-template-columns: 320px 1fr 320px;
@@ -226,10 +241,24 @@ HTML_TEMPLATE = """
         .side-column-stream { display: flex; flex-direction: column; gap: 25px; }
         .center-news-stream { display: flex; flex-direction: column; align-items: center; }
         
-        /* KÖZÉPSŐ FIX MAGAZINBORÍTÓ SZERKEZETE */
-        .main-magazine-cover { width: 100%; max-width: 480px; margin: 0 auto 3rem auto; border: 2px solid #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+        .main-magazine-cover { 
+            width: 100%; 
+            max-width: 480px; 
+            margin: 0 auto 3rem auto; 
+            border: 2px solid #fff; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5); 
+            position: relative;
+        }
         .main-magazine-cover img { width: 100%; height: auto; display: block; }
         
+        .cover-hotspot { position: absolute; background: rgba(255,255,255,0); transition: background 0.2s ease; cursor: pointer; }
+        .cover-hotspot:hover { background: rgba(255,255,255,0.15); }
+        
+        .hs-kulfold { top: 35%; left: 35%; width: 28%; height: 5%; border-radius: 10px; }
+        .hs-venia { top: 66%; left: 52%; width: 44%; height: 16%; }
+        .hs-vallas { top: 76%; left: 3%; width: 45%; height: 12%; }
+        .hs-tech { top: 88%; left: 51%; width: 46%; height: 9%; border-radius: 10px; }
+
         .rovat-section { margin-bottom: 3.5rem; width: 100%; }
         .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
         
@@ -240,19 +269,63 @@ HTML_TEMPLATE = """
         .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
         .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
         .cikk-link:hover { color: #2ea6f2; text-decoration: underline; }
-
-        /* SŰRŰBB, EZÜSTÖS MINI GOOGLE HIRDETÉSI BOXOK */
-        .twn-mini-ad { background-color: #1a202c; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; width: 100%; box-sizing: border-box; text-align: center; margin: 10px 0; }
+        
+        .twn-mini-ad { background-color: #1a202c; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; width: 100%; box-sizing: border-box; text-align: center; margin: 10px 0; overflow: hidden; }
         .ad-label { font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
-        .ad-text { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; }
+        .ad-text { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; text-decoration: none; }
+
+        footer {
+            background-color: #737373; 
+            padding: 30px 20px;
+            margin-top: 5rem;
+            border-top: 4px solid #ff2a2a;
+        }
+        .footer-top-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        .footer-logo-area {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .footer-logo-text {
+            color: #1e293b;
+            font-family: 'Bodoni Moda', serif;
+            font-size: 2.2rem;
+            font-weight: bold;
+        }
+        .footer-links-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px 30px;
+        }
+        .footer-link {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .footer-bottom-dark-bar {
+            background-color: #171717; 
+            padding: 25px 20px;
+            font-size: 0.8rem;
+            color: #a3a3a3;
+        }
+        .footer-bottom-container { max-width: 1400px; margin: 0 auto; }
     </style>
 </head>
 """
-# 3. RÉSZLET: A HÁROMHASÁBOS ELRENDEZÉS ÉS A SZERVER INDÍTÁSA
 HTML_TEMPLATE += """
 <body>
-
-    <!-- A MOZDÍTHATATLAN LEFAGYASZTOTT FELSŐ SÁV (LOGÓ + MENÜ) -->
     <div class="frozen-top-header">
         <header>
             <div class="header-logo-container">
@@ -278,15 +351,13 @@ HTML_TEMPLATE += """
             <a href="#gazdasag" class="nav-item">Gazdaság</a>
             <a href="#vallas" class="nav-item">Vallás</a>
             <a href="#tech" class="nav-item">Család & Tech</a>
+            <a href="/hirdetes" class="nav-item nav-item-marketing">💼 Hirdetés feladás</a>
         </div>
     </div>
 
-    <!-- A TÖKÉLETES HÁROMHASÁBOS MAGAZIN STRUKTÚRA -->
     <div class="three-column-grid-container">
-        
-        <!-- ================= BAL HASÁB ================= -->
+        <!-- BAL HASÁB -->
         <div class="side-column-stream">
-            <!-- ROVAT: VALLÁS -->
             <div class="rovat-section" id="vallas">
                 <div class="rovat-title">Hit & Erkölcs</div>
                 {% for ujsag in news['Vallás'] %}
@@ -294,19 +365,17 @@ HTML_TEMPLATE += """
                         <img src="/logo_kepek/{{ ujsag.logo }}" class="ujsag-logo-img" alt="Logó">
                         {% for cikk in ujsag.cikkek %}
                             <div class="cikk-row">
-                                <!-- GARANTÁLTAN PONTOSAN AZ ADOTT ÚJSÁG OLDALÁRA MUTATÓ LINK -->
                                 <a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a>
                             </div>
                         {% endfor %}
                     </div>
                     <div class="twn-mini-ad">
-                        <span class="ad-label">Hirdetés / Google Ad</span>
-                        <span class="ad-text">Saját Hirdetési Felület — Helyfoglalás az Adminban!</span>
+                        <span class="ad-label">Hirdetés / Premium Ad</span>
+                        <a href="{{ cfg.ads.vallas_ad.url }}" target="_blank" class="ad-text">{{ cfg.ads.vallas_ad.content }}</a>
                     </div>
                 {% endfor %}
             </div>
 
-            <!-- ROVAT: GAZDASÁG -->
             <div class="rovat-section" id="gazdasag">
                 <div class="rovat-title">Gazdaság</div>
                 <div class="side-column-stream">
@@ -319,25 +388,25 @@ HTML_TEMPLATE += """
                                 </div>
                             {% endfor %}
                         </div>
-                        
-                        <!-- SŰRÍTETT REKLÁMHELY -->
                         <div class="twn-mini-ad">
-                            <span class="ad-label">Hirdetési zóna</span>
-                            <span class="ad-text">Prémium Reklámfelület — TWN Ad Space</span>
+                            <span class="ad-label">Hirdetés / Premium Ad</span>
+                            <a href="{{ cfg.ads.gazdasag_ad.url }}" target="_blank" class="ad-text">{{ cfg.ads.gazdasag_ad.content }}</a>
                         </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
-        <!-- ================= KÖZÉPSŐ HASÁB ================= -->
+        <!-- KÖZÉPSŐ HASÁB -->
         <div class="center-news-stream">
-            <!-- A FIXEN KÖZÉPRE REKREÁLT NAGY MAGAZINBORÍTÓ -->
             <div class="main-magazine-cover">
                 <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
+                <a href="{{ cfg.cover_links.kulfold_politika }}" target="_blank" class="cover-hotspot hs-kulfold" title="Külföld & Politika"></a>
+                <a href="{{ cfg.cover_links.venia_sokk }}" target="_blank" class="cover-hotspot hs-venia" title="Venia-Sokk"></a>
+                <a href="{{ cfg.cover_links.vallas_hit }}" target="_blank" class="cover-hotspot hs-vallas" title="Vallás, Hit & Erkölcs"></a>
+                <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
             </div>
 
-            <!-- ROVAT: BELFÖLD -->
             <div class="rovat-section" id="belfold">
                 <div class="rovat-title">Belföld hírei</div>
                 <div class="news-grid">
@@ -354,7 +423,6 @@ HTML_TEMPLATE += """
                 </div>
             </div>
 
-            <!-- ROVAT: KÜLFÖLD -->
             <div class="rovat-section" id="kulfold">
                 <div class="rovat-title">Külföldi Sajtó</div>
                 <div class="news-grid">
@@ -372,9 +440,8 @@ HTML_TEMPLATE += """
             </div>
         </div>
 
-        <!-- ================= JOBB HASÁB ================= -->
+        <!-- JOBB HASÁB -->
         <div class="side-column-stream">
-            <!-- ROVAT: CSALÁD & TECH -->
             <div class="rovat-section" id="tech">
                 <div class="rovat-title">Család & Tech</div>
                 <div class="side-column-stream">
@@ -387,31 +454,152 @@ HTML_TEMPLATE += """
                                 </div>
                             {% endfor %}
                         </div>
-                        
-                        <!-- MEGEMELT HIRDETÉSI SŰRŰSÉG -->
                         {% if loop.index % 2 == 0 %}
                             <div class="twn-mini-ad">
-                                <span class="ad-label">Hirdetési zóna</span>
-                                <span class="ad-text">Saját Hirdetési Felület — Eladó hirdetési hely</span>
+                                <span class="ad-label">Hirdetés / Premium Ad</span>
+                                <a href="{{ cfg.ads.tech_ad.url }}" target="_blank" class="ad-text">{{ cfg.ads.tech_ad.content }}</a>
                             </div>
                         {% endif %}
                     {% endfor %}
                 </div>
             </div>
         </div>
-
     </div>
 
+    <footer>
+        <div class="footer-top-container">
+            <div class="footer-logo-area">
+                <div class="footer-logo-text">TWN News</div>
+            </div>
+            <div class="footer-links-grid">
+                <a href="/impresszum" class="footer-link">I Impresszum</a>
+                <a href="/aszf" class="footer-link">I ÁSZF</a>
+                <a href="/adatvedelem" class="footer-link">I Adatvédelem</a>
+                <a href="/hirdetes" class="footer-link">I Médiaajánlat</a>
+                <a href="/hirdetes" class="footer-link">I Kapcsolat</a>
+                <a href="/admin" class="footer-link" style="color: #38bdf8;">I Admin belépés</a>
+            </div>
+        </div>
+    </footer>
+    <div class="footer-bottom-dark-bar">
+        <div class="footer-bottom-container">
+            <p>Nemzeti Média- és Hírközlési Hatóság nyilvántartása folyamatban. | info@twnnews.hu | www.twnnews.hu</p>
+            <p style="margin-top: 10px; font-size: 0.75rem; color: #737373;">Az oldalon megjelenő külső hírek az automatizált aggregátor rendszeren keresztül. © 2026 TWNNEWS Kft.</p>
+        </div>
+    </div>
 </body>
 </html>
 """
+# ================= JOGI ÉS MARKETING SABLONOK =================
+JOGI_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ cim }} — THE WEEKLY TWN NEWS</title>
+    <style>
+        body { font-family: sans-serif; background-color: #1e293b; color: #fff; padding: 40px 20px; line-height: 1.6; }
+        .box { max-width: 800px; margin: 0 auto; background: #0f172a; padding: 40px; border-radius: 8px; border: 1px solid #475569; }
+        h1 { color: #38bdf8; border-bottom: 2px solid #38bdf8; padding-bottom: 10px; }
+        h3 { color: #ff2a2a; margin-top: 25px; }
+        .back { display: inline-block; margin-top: 30px; background: #ff2a2a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>{{ cim }}</h1>
+        <div>{{ tartalom | safe }}</div>
+        <a href="/" class="back">⬅ Vissza a főoldalra</a>
+    </div>
+</body>
+</html>
+"""
+
+MARKETING_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Hirdessen a TWN News-on</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1e293b; color: #fff; text-align: center; padding: 50px 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #0f172a; padding: 30px; border-radius: 8px; border: 1px solid #475569; }
+        h1 { color: #38bdf8; }
+        p { line-height: 1.6; color: #cbd5e1; }
+        .back-btn { display: inline-block; margin-top: 20px; background: #ff2a2a; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TWN News Médiaajánlat</h1>
+        <p>Szeretné termékét, szolgáltatását vagy hirdetését elhelyezni a felületünkön?</p>
+        <p><strong>Elérhető felületeink:</strong> Kiemelt képes bannerek, beágyazott hirdetések a hasábok között, és egyedi PR cikkek.</p>
+        <p>Kapcsolatfelvétel: <strong>info@twnnews.hu</strong></p>
+        <a href="/" class="back-btn">⬅ Vissza a címlapra</a>
+    </div>
+</body>
+</html>
+"""
+
+# ================= FLASK ÚTVONALAK (ROUTES) =================
 
 @app.route("/")
 def index():
     global STORED_NEWS
     if not STORED_NEWS:
         STORED_NEWS = scrape_all_news()
-    return render_template_string(HTML_TEMPLATE, news=STORED_NEWS)
+    current_config = load_config()
+    return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, cfg=current_config)
+
+@app.route("/hirdetes")
+def hirdetes():
+    return render_template_string(MARKETING_TEMPLATE)
+
+@app.route("/impresszum")
+def impresszum():
+    szoveg = """
+    <p><strong>A twnnews.hu digitális híraggregátor és magazin hivatalos adatai:</strong></p>
+    <h3>Alapító-főszerkesztő és Tulajdonos:</h3>
+    <p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p>
+    <h3>Tárhelyszolgáltató adatai:</h3>
+    <p>[Tárhelyszolgáltató neve és címe]</p>
+    <h3>Felelősségi nyilatkozat az aggregált tartalomról:</h3>
+    <p>A TWN News felületén megjelenő hírek jelentős része egy automatizált rendszeren keresztül, külső sajtóorgánumok (pl. Origo, Blikk, Index, Hetek, BBC) nyilvánosan elérhető RSS csatornáiból származik. Ezen külső hírek valóságtartalmáért, pontos szövegezéséért a TWN News szerkesztősége felelősséget nem vállal. A linkekre kattintva az olvasó minden esetben elhagyja a TWN News felületét és az eredeti tartalomgyártó oldalára navigál át.</p>
+    """
+    return render_template_string(JOGI_TEMPLATE, cim="Impresszum", tartalom=szoveg)
+
+@app.route("/aszf")
+def aszf():
+    szoveg = """
+    <h3>1. Általános feltételek</h3>
+    <p>A twnnews.hu használatával minden látogató automatikusan elfogadja a jelen Általános Szerződési Feltételeket. A híraggregátor szolgáltatás használata ingyenes.</p>
+    <h3>2. Hirdetési szerződések</h3>
+    <p>A hasábok között és a felületeken megjelenő egyedi reklámhelyeket a Hirdetők az Adminisztrációs felületen vagy közvetlen megállapodás útján vásárolhatják meg. A Hirdető teljes jogi felelősséget vállal az általa beküldött képi és videós anyagok jogtisztaságáért.</p>
+    <h3>3. Szellemi tulajdon védelme</h3>
+    <p>A magazinborítón és a prémium hetilap modulban megjelenő egyedi, saját gyártású cikkek a TWN News kizárólagos szellemi tulajdonát képezik, azok másolása és utánközlése engedélyköteles.</p>
+    """
+    return render_template_string(JOGI_TEMPLATE, cim="Általános Szerződési Feltételek (ÁSZF)", tartalom=szoveg)
+
+@app.route("/adatvedelem")
+def adatvedelem():
+    szoveg = """
+    <h3>1. Adatkezelés célja</h3>
+    <p>A TWN News kizárólag üzleti kapcsolattartás, hirdetési ajánlatkérések céljából kezel személyes adatokat (nevet és e-mail címet), amelyeket a felhasználók önkéntesen adnak meg.</p>
+    <h3>2. Sütik (Cookies) használata</h3>
+    <p>A weboldal a prémium felhasználói élmény fokozása és látogatottsági statisztikák mérése érdekében anonim sütiket helyezhet el a látogató böngészőjében. Adatvédelmi kérelmeket az info@twnnews.hu címen fogadunk.</p>
+    """
+    return render_template_string(JOGI_TEMPLATE, cim="Adatvédelmi Tájékoztató (GDPR)", tartalom=szoveg)
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    if not session.get("logged_in"):
+        if request.method == "POST":
+            if request.form.get("password") == ADMIN_PASSWORD:
+                session["logged_in"] = True
+                return redirect(url_for("admin"))
+            return '<h3>Hibás jelszó! <a href="/admin">Újra</a></h3>'
+        return '<body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;"><form method="POST" style="background:#1e293b; display:inline-block; padding:30px; border-radius:8px; border:1px solid #475569;"><label style="display:block; margin-bottom:10px;">Admin Jelszó:</label><input type="password" name="password" style="padding:8px; background:#0f172a; color:#fff; border:1px solid #475569;"><br><br><button type="submit" style="background:#ff2a2a; color:#fff; border:0; padding:8px 15px; border-radius:4px; cursor:pointer;">Belépés</button></form></body>'
+    return "<h3>Admin felület sikeresen összekötve a twn_config.json rendszerrel.</h3>"
 
 @app.route('/logo_kepek/<path:filename>')
 def serve_logos(filename):
