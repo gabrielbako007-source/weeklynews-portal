@@ -337,6 +337,54 @@ HTML_TEMPLATE = """
             line-height: 1.6;
         }
         .footer-bottom-container { max-width: 1400px; margin: 0 auto; }
+        .footer-bottom-dark-bar {
+    background-color: #171717;
+    padding: 25px 20px;
+    font-size: 0.8rem;
+    color: #a3a3a3;
+    line-height: 1.6;
+}
+.footer-bottom-container { max-width: 1400px; margin: 0 auto; }
+
+/* === INNENTŐL MÁSOLD BE A JAVÍTÁST === */
+@media (max-width: 768px) {
+    /* Menüsor kényszerítése egymás mellé és görgethetővé tétele */
+    .nav-bar {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        width: 100% !important;
+        padding: 10px !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .nav-bar a {
+        display: inline-block !important;
+        flex-shrink: 0 !important;
+        margin-right: 15px !important;
+    }
+    /* Hirdetés gomb új sorba helyezése, hogy ne takarjon el semmit */
+    [href*="hirdetes"], [class*="hirdetes"] {
+        display: block !important;
+        width: 90% !important;
+        margin: 15px auto !important;
+        text-align: center !important;
+        clear: both !important;
+    }
+    /* Lábléc linkek rendezése 2 oszlopba */
+    .footer-bottom-dark-bar, footer, .footer {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 15px !important;
+        padding: 20px !important;
+    }
+    .footer-bottom-dark-bar a, footer a {
+        display: block !important;
+        font-size: 14px !important;
+    }
+}
+/* === IDÁIG TART A JAVÍTÁS === */
+
     </style>
 </head>
 <body>
@@ -692,3 +740,4 @@ def refresh():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
