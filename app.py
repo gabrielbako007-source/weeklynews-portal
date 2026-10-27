@@ -9,6 +9,7 @@ app.secret_key = "twn_super_secret_key_for_session"
 CONFIG_FILE = "twn_config.json"
 ADMIN_PASSWORD = "twnadmin2026"
 
+# 🔌 LÉTREHOZVA A 9 SORSZÁMOZOTT BOX ÉS A CÍMLAPI BANNER CSATLAKOZÓJA
 DEFAULT_CONFIG = {
     "cover_links": {
         "kulfold_politika": "https://twnnews.hu",
@@ -25,7 +26,7 @@ DEFAULT_CONFIG = {
         "hatos_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hatos helyfoglalás", "url": "/hirdetes"},
         "hetes_ad": {"type": "text", "content": "Saját Hirdetési Felület — Hetes helyfoglalás", "url": "/hirdetes"},
         "nyolcas_ad": {"type": "text", "content": "Saját Hirdetési Felület — Nyolcas helyfoglalás", "url": "/hirdetes"},
-        "kilences_ad": {"type": "text", "content": "Saját Hirdetési Felület — Kilences helyfoglalás", "url": "/hirdetes"},
+        "kilences_ad": {"type": "text", "content": "Saját Hirdetési Felület — Kilences helyfoglalás (Videó)", "url": "/hirdetes"},
         "kulon_hasab_ad": {"type": "text", "content": "Kiemelt Címlapi Hirdetés — Helyfoglalás", "url": "/hirdetes"}
     }
 }
@@ -44,7 +45,6 @@ def load_config():
 def save_config(config):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=4)
-
 HIRCATORNAK = {
     "Belföld": [
         {"id": "1", "name": "Origo", "site": "https://origo.hu"}, 
@@ -169,6 +169,7 @@ HTML_TEMPLATE = AD_MACRO + """
         .nav-item-marketing { color: #38bdf8; border-left: 1px solid #475569; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
         
+        /* 🔒 VISSZAÁLLÍTVA AZ EREDETI 3 HASÁBOS SZERKEZET SZÉLESSÉGEK */
         .three-column-grid-container { display: grid; grid-template-columns: 320px 1fr 320px; gap: 2rem; max-width: 1700px; margin: 2rem auto; padding: 0 1rem; }
         @media (max-width: 1300px) { .three-column-grid-container { grid-template-columns: 1fr; } }
         
@@ -242,7 +243,7 @@ HTML_TEMPLATE += """
                 <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
             </div>
 
-            <!-- Kiemelt címlapi hirdetés a borító alatt -->
+            <!-- Kiemelt hirdetési sáv közvetlenül a borító alatt -->
             {{ render_ad(cfg.ads.kulon_hasab_ad, 'kulon_hasab_top') }}
             
             <div class="rovat-section" id="belfold">
@@ -473,6 +474,7 @@ ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 @app.route("/")
 def index():
     global STORED_NEWS
