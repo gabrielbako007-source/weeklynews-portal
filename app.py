@@ -595,7 +595,8 @@ HTML_TEMPLATE = """
     <footer>
         <div class="footer-top-container">
             <div class="footer-logo-area">
-                <div class="footer-logo-text">TWN News</div>
+                <img src="/twn_logo.png" alt="The Weekly TWN News" style="max-width: 180px; height: auto; display: block; margin: 0 auto; padding: 5px;">
+
             </div>
             <div class="footer-links-grid">
                 <a href="/impresszum" class="footer-link">I Impresszum</a>
