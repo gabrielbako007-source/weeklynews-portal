@@ -386,18 +386,44 @@ HTML_TEMPLATE = """
         float: none !important;
     }
 
-    /* 5. A szürke lábléc (footer) elemeit 2 szép oszlopba rendezzük */
+        /* 5. A szürke lábléc (footer) elemeit tiszta, egyenes sorokba rendezzük */
     .footer-bottom-dark-bar, footer, .footer {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 15px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 10px !important;
         padding: 20px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
-    .footer-bottom-dark-bar a, footer a {
+    /* A linkeket tartalmazó blokk egy vonalba rendezése */
+    .footer-bottom-dark-bar div, footer div, .footer div {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    /* A linkek szövege egy sorban marad, nem törik ketté */
+    .footer-bottom-dark-bar a, footer a, .footer a {
+        display: inline-block !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* A legalsó szerzői jogi szöveg kényszerítése egyetlen egyenes sorba */
+    .footer-bottom-dark-bar p, footer p, .footer-bottom-dark-bar span, .footer p {
         display: block !important;
-        font-size: 14px !important;
-        margin-bottom: 5px !important;
+        width: 100% !important;
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        text-align: center !important;
+        margin-top: 10px !important;
     }
 }
 
