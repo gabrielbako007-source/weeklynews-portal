@@ -594,7 +594,7 @@ HTML_TEMPLATE = """
     </div> <!-- GRID LEZÁRÁSA -->
     <footer>
         <div class="footer-top-container">
-            <img src="/logo.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto 15px auto;">
+            <img src="https://githubusercontent.com" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto 15px auto;">
 
             </div>
             <div class="footer-links-grid">
