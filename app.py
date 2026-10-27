@@ -5,63 +5,54 @@ from flask import Flask, render_template_string, redirect, url_for, send_from_di
 
 app = Flask(__name__)
 
-# 1. RÉSZLET: A 42 DARAB ÚJSÁG HIVATALOS HÍRFORRÁSAINAK LISTÁJA SORSZÁMOK SZERINT
+# 1. RÉSZLET: A 42 DARAB ÚJSÁG CSATORNÁJA KATEGÓRIÁK SZERINT PONTOSAN SZÉTVÁLOGATVA
 HIRCATORNAK = {
-    "1": {"name": "Origo", "url": "https://origo.hu"},
-    "2": {"name": "Blikk", "url": "https://blikk.hu"},
-    "3": {"name": "Nők Lapja Café", "url": "https://nlc.hu"},
-    "4": {"name": "Femina", "url": "https://femina.hu"},
-    "5": {"name": "Index", "url": "https://index.hu"},
-    "6": {"name": "Telex", "url": "https://telex.hu"},
-    "7": {"name": "24.hu", "url": "https://24.hu"},
-    "8": {"name": "HVG", "url": "https://hvg.hu"},
-    "9": {"name": "444.hu", "url": "https://444.hu"},
-    "10": {"name": "Magyar Nemzet", "url": "https://magyarnemzet.hu"},
-    "11": {"name": "RTL Híradó", "url": "https://rtl.hu"},
-    "12": {"name": "TV2 Tények", "url": "https://tenyek.hu"},
-    "13": {"name": "Népszava", "url": "https://nepszava.hu"},
-    "14": {"name": "BorsOnline", "url": "https://borsonline.hu"},
-    "15": {"name": "Glamour", "url": "https://glamour.hu"},
-    "16": {"name": "Hetek Magazin", "url": "https://hetek.hu"},
-    "17": {"name": "Portfolio", "url": "https://portfolio.hu"},
-    "18": {"name": "Pénzcentrum", "url": "https://penzcentrum.hu"},
-    "19": {"name": "Világgazdaság", "url": "https://vg.hu"},
-    "20": {"name": "BBC News", "url": "https://bbci.co.uk"},
-    "21": {"name": "Reuters", "url": "https://reutersagency.com"},
-    "22": {"name": "The Guardian", "url": "https://theguardian.com"},
-    "23": {"name": "Deutsche Welle", "url": "https://dw.com"},
-    "24": {"name": "Der Spiegel", "url": "https://spiegel.de"},
-    "25": {"name": "Sky News", "url": "https://skynews.com"},
-    "26": {"name": "ABC News", "url": "https://go.com"},
-    "27": {"name": "The Mirror", "url": "https://mirror.co.uk"},
-    "28": {"name": "The Independent", "url": "https://independent.co.uk"},
-    "29": {"name": "The Times", "url": "https://thetimes.com"},
-    "30": {"name": "CNN", "url": "http://cnn.com"},
-    "31": {"name": "The New York Times", "url": "https://nytimes.com"},
-    "32": {"name": "BBC UK", "url": "https://bbci.co.uk"},
-    "33": {"name": "The Washington Post", "url": "https://washingtonpost.com"},
-    "34": {"name": "Tagesschau", "url": "https://tagesschau.de"},
-    "35": {"name": "Bunte.de", "url": "https://bunte.de"},
-    "36": {"name": "Blog.hu", "url": "https://blog.hu"},
-    "37": {"name": "Gala", "url": "https://gala.de"},
-    "38": {"name": "Bild", "url": "https://bild.de"},
-    "39": {"name": "Closer", "url": "https://closerweekly.com"},
-    "40": {"name": "Hello Magazin", "url": "https://hellomagazine.com"},
-    "41": {"name": "Daily Mail", "url": "https://dailymail.co.uk"},
-    "42": {"name": "The Sun", "url": "https://thesun.co.uk"}
+    "Belföld": [
+        {"id": "1", "name": "Origo"}, {"id": "2", "name": "Blikk"}, {"id": "3", "name": "Nők Lapja Café"},
+        {"id": "4", "name": "Femina"}, {"id": "5", "name": "Index"}, {"id": "6", "name": "Telex"},
+        {"id": "7", "name": "24.hu"}, {"id": "8", "name": "HVG"}, {"id": "9", "name": "444.hu"},
+        {"id": "10", "name": "Magyar Nemzet"}, {"id": "11", "name": "RTL Híradó"}, 
+        {"id": "12", "name": "TV2 Tények"}, {"id": "13", "name": "Népszava"}, {"id": "14", "name": "BorsOnline"}
+    ],
+    "Külföld": [
+        {"id": "20", "name": "BBC News"}, {"id": "21", "name": "Reuters"}, {"id": "22", "name": "The Guardian"},
+        {"id": "23", "name": "Deutsche Welle"}, {"id": "24", "name": "Der Spiegel"}, {"id": "25", "name": "Sky News"},
+        {"id": "26", "name": "ABC News"}, {"id": "27", "name": "The Mirror"}, {"id": "28", "name": "The Independent"},
+        {"id": "29", "name": "The Times"}, {"id": "30", "name": "CNN"}, {"id": "31", "name": "The New York Times"},
+        {"id": "32", "name": "BBC UK"}, {"id": "33", "name": "The Washington Post"}, {"id": "34", "name": "Tagesschau"}
+    ],
+    "Gazdaság": [
+        {"id": "17", "name": "Portfolio"}, {"id": "18", "name": "Pénzcentrum"}, {"id": "19", "name": "Világgazdaság"}
+    ],
+    "Vallás": [
+        {"id": "16", "name": "Hetek Magazin"}
+    ],
+    "Család & Tech": [
+        {"id": "15", "name": "Glamour"}, {"id": "35", "name": "Bunte.de"}, {"id": "36", "name": "Blog.hu"},
+        {"id": "37", "name": "Gala"}, {"id": "38", "name": "Bild"}, {"id": "39", "name": "Closer"},
+        {"id": "40", "name": "Hello Magazin"}, {"id": "41", "name": "Daily Mail"}, {"id": "42", "name": "The Sun"}
+    ]
 }
 
 STORED_NEWS = {}
 
+def fake_fetch_news(ujsag_id, ujsag_nev):
+    return [
+        {"title": f"Vezető hír és friss közéleti riport — {ujsag_nev}", "link": "#", "logo": f"{ujsag_id}.jpg.jpg"},
+        {"title": f"Rendkívüli beszámoló és helyi elemzés", "link": "#", "logo": f"{ujsag_id}.jpg.jpg"}
+    ]
+
 def scrape_all_news():
-    categories = {}
-    for sorszam, info in HIRCATORNAK.items():
-        categories[sorszam] = [
-            {"title": f"Vezető hír és friss közéleti riport — {info['name']}", "link": info['url']},
-            {"title": f"Rendkívüli gazdasági és nemzetközi összefoglaló", "link": info['url']}
-        ]
+    categories = {"Belföld": [], "Külföld": [], "Gazdaság": [], "Vallás": [], "Család & Tech": []}
+    for kat_nev, ujsagok in HIRCATORNAK.items():
+        for ujsag in ujsagok:
+            categories[kat_nev].append({
+                "ujsag_name": ujsag["name"],
+                "logo": f"{ujsag['id']}.jpg.jpg",
+                "cikkek": fake_fetch_news(ujsag["id"], ujsag["name"])
+            })
     return categories
-# 2. RÉSZLET: A PORTÁL TELJES STÍLUSA ÉS DIZÁJN SABLONJA
+# 2. RÉSZLET: A MOZDÍTHATATLAN (FROZEN) FEJLÉC ÉS A DIZÁJN STÍLUSLAPJA
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
@@ -75,13 +66,23 @@ HTML_TEMPLATE = """
         body { 
             font-family: 'Arial', sans-serif; 
             margin: 0; padding: 0; 
-            background-color: #1e293b; /* PRÉMIUM PALASZÜRKE ALAPVILÁG */
+            background-color: #1e293b; /* FIX PRÉMIUM PALASZÜRKE ALAPVILÁG */
             color: #ffffff;
+            overflow-x: hidden;
         }
         
+        /* TELJESEN RÖGZÍTETT, MOZDÍTHATATLAN FELSŐ SZEKCIÓ */
+        .frozen-top-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
         header { 
             background-color: #0f172a; 
-            padding: 1.8rem 1rem; 
+            padding: 1.5rem 1rem; 
             text-align: center;
             border-bottom: 3px solid #ff2a2a;
         }
@@ -177,132 +178,195 @@ HTML_TEMPLATE = """
             text-transform: uppercase;
         }
         
-        .nav-bar { background-color: #0f172a; padding: 0px 1rem; display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #475569; }
+        .nav-bar { background-color: #0f172a; padding: 0px 1rem; display: flex; justify-content: center; border-bottom: 1px solid #475569; }
+        .nav-item { color: white; font-family: sans-serif; font-weight: bold; padding: 1.1rem 1.5rem; text-decoration: none; font-size: 1.05rem; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
         
-        /* 42-HASÁBOS AUTOMATIKUS PORTÁL ELRENDEZÉS */
-        .portal-layout {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 25px;
-            max-width: 1600px;
-            width: 95%;
+        /* 3-HASÁBOS PRÉMIUM STRUKTÚRA REKREÁCIÓJA */
+        .three-column-grid-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            gap: 2rem;
+            max-width: 1700px;
             margin: 2rem auto;
-            justify-content: center;
+            padding: 0 1rem;
         }
+        @media (max-width: 1300px) {
+            .three-column-grid-container { grid-template-columns: 1fr; }
+        }
+        
+        .side-column-stream { display: flex; flex-direction: column; gap: 25px; }
+        .center-news-stream { display: flex; flex-direction: column; align-items: center; }
+        
+        /* KÖZÉPSŐ FIX MAGAZINBORÍTÓ SZERKEZETE */
+        .main-magazine-cover { width: 100%; max-width: 480px; margin: 0 auto 3rem auto; border: 2px solid #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+        .main-magazine-cover img { width: 100%; height: auto; display: block; }
+        
+        .rovat-section { margin-bottom: 3.5rem; width: 100%; }
+        .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; }
+        .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .ujsag-logo-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; }
+        
+        .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
+        .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
+        .cikk-link:hover { color: #2ea6f2; text-decoration: underline; }
 
-        .ujsag-column {
-            background-color: #0f172a;
-            border: 1px solid #475569;
-            border-radius: 8px;
-            width: 300px;
-            padding: 15px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .ujsag-logo {
-            width: 100%;
-            height: auto;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            border: 1px solid #334155;
-        }
-
-        .cikk-card {
-            width: 100%;
-            border-top: 1px solid #334155;
-            padding-top: 10px;
-            margin-top: 10px;
-        }
-
-        .cikk-title {
-            font-size: 0.95rem;
-            font-weight: bold;
-            color: #ffffff;
-            text-decoration: none;
-            line-height: 1.4;
-            display: block;
-        }
-        .cikk-title:hover { color: #2ea6f2; text-decoration: underline; }
-
-        /* GOOGLE-STÍLUSÚ MINI HIRDETÉSI BOX STÍLUSA */
-        .twn-mini-ad {
-            background-color: #1a202c;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 12px;
-            width: 100%;
-            box-sizing: border-box;
-            text-align: center;
-            margin-top: auto;
-            padding-top: 15px;
-        }
-        .ad-label {
-            font-size: 0.7rem;
-            color: #a0aec0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: block;
-            margin-bottom: 5px;
-        }
-        .ad-text {
-            font-size: 0.85rem;
-            color: #cbd5e1;
-            font-weight: bold;
-        }
+        /* EZÜSTÖS MINI GOOGLE HIRDETÉSI BOXOK */
+        .twn-mini-ad { background-color: #1a202c; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; width: 100%; box-sizing: border-box; text-align: center; margin: 10px 0; }
+        .ad-label { font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
+        .ad-text { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; }
     </style>
 </head>
+"""
+# 3. RÉSZLET: A HÁROMHASÁBOS ELRENDEZÉS ÉS A SZERVER INDÍTÁSA
+HTML_TEMPLATE += """
 <body>
-    <header>
-        <div class="header-logo-container">
-            <div class="logo-box-html">
-                <div class="logo-text-the">THE</div>
-                <div class="logo-right-wrapper">
-                    <div class="logo-text-weekly">WEEKLY</div>
-                    <div class="logo-bottom-row-wrapper">
-                        <div class="logo-twn-badge">
-                            <span>T</span><span>W</span><span>N</span>
+
+    <!-- A MOZDÍTHATATLAN LEFAGYASZTOTT FELSŐ SÁV (LOGÓ + MENÜ) -->
+    <div class="frozen-top-header">
+        <header>
+            <div class="header-logo-container">
+                <div class="logo-box-html">
+                    <div class="logo-text-the">THE</div>
+                    <div class="logo-right-wrapper">
+                        <div class="logo-text-weekly">WEEKLY</div>
+                        <div class="logo-bottom-row-wrapper">
+                            <div class="logo-twn-badge">
+                                <span>T</span><span>W</span><span>N</span>
+                            </div>
+                            <div class="logo-text-news">NEWS</div>
                         </div>
-                        <div class="logo-text-news">NEWS</div>
                     </div>
                 </div>
             </div>
+        </header>
+        
+        <div class="nav-bar">
+            <a href="/frissites" class="btn-refresh">🔄 Frissítés</a>
+            <a href="#belfold" class="nav-item">Belföld</a>
+            <a href="#kulfold" class="nav-item">Külföld</a>
+            <a href="#gazdasag" class="nav-item">Gazdaság</a>
+            <a href="#vallas" class="nav-item">Vallás</a>
+            <a href="#tech" class="nav-item">Család & Tech</a>
         </div>
-    </header>
-    
-    <div class="nav-bar">
-        <a href="/frissites" class="btn-refresh">🔄 Frissítés</a>
     </div>
 
-    <div class="portal-layout">
-        {% for i in range(1, 43) %}
-            {% set sorszam_str = i|string %}
-            <div class="ujsag-column">
-                <!-- BETÖLTI A JÓVÁHAGYOTT .jpg.jpg KÉPEKET HIBÁTLANUL -->
-                <img src="/logo_kepek/{{ i }}.jpg.jpg" class="ujsag-logo" alt="Logó">
-                
-                {% for cikk in news[sorszam_str] %}
-                    <div class="cikk-card">
-                        <a href="{{ cikk.link }}" target="_blank" class="cikk-title">{{ cikk.title }}</a>
+    <!-- A TÖKÉLETES HÁROMHASÁBOS MAGAZIN STRUKTÚRA -->
+    <div class="three-column-grid-container">
+        
+        <!-- ================= BAL HASÁB ================= -->
+        <div class="side-column-stream">
+            <!-- ROVAT: VALLÁS -->
+            <div class="rovat-section" id="vallas">
+                <div class="rovat-title">Hit & Erkölcs</div>
+                {% for ujsag in news['Vallás'] %}
+                    <div class="ujsag-box-card">
+                        <img src="/logo_kepek/{{ ujsag.logo }}" class="ujsag-logo-img" alt="Logó">
+                        {% for cikk in ujsag.cikkek %}
+                            <div class="cikk-row">
+                                <a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a>
+                            </div>
+                        {% endfor %}
                     </div>
                 {% endfor %}
-                
-                {% if i % 3 == 0 %}
-                    <div class="twn-mini-ad">
-                        <span class="ad-label">Hirdetés / Google Ad</span>
-                        <span class="ad-text">Saját Hirdetési Felület — Helyfoglalás az Adminban!</span>
-                    </div>
-                {% endif %}
             </div>
-        {% endfor %}
+
+            <!-- ROVAT: GAZDASÁG -->
+            <div class="rovat-section" id="gazdasag">
+                <div class="rovat-title">Gazdaság</div>
+                <div class="side-column-stream">
+                    {% for ujsag in news['Gazdaság'] %}
+                        <div class="ujsag-box-card">
+                            <img src="/logo_kepek/{{ ujsag.logo }}" class="ujsag-logo-img" alt="Logó">
+                            {% for cikk in ujsag.cikkek %}
+                                <div class="cikk-row">
+                                    <a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= KÖZÉPSŐ HASÁB ================= -->
+        <div class="center-news-stream">
+            <!-- A FIXEN KÖZÉPRE REKREÁLT NAGY MAGAZINBORÍTÓ -->
+            <div class="main-magazine-cover">
+                <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
+            </div>
+
+            <!-- ROVAT: BELFÖLD -->
+            <div class="rovat-section" id="belfold">
+                <div class="rovat-title">Belföld hírei</div>
+                <div class="news-grid">
+                    {% for ujsag in news['Belföld'] %}
+                        <div class="ujsag-box-card">
+                            <img src="/logo_kepek/{{ ujsag.logo }}" class="ujsag-logo-img" alt="Logó">
+                            {% for cikk in ujsag.cikkek %}
+                                <div class="cikk-row">
+                                    <a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- ROVAT: KÜLFÖLD -->
+            <div class="rovat-section" id="kulfold">
+                <div class="rovat-title">Külföldi Sajtó</div>
+                <div class="news-grid">
+                    {% for ujsag in news['Külföld'] %}
+                        <div class="ujsag-box-card">
+                            <img src="/logo_kepek/{{ ujsag.logo }}" class="ujsag-logo-img" alt="Logó">
+                            {% for cikk in ujsag.cikkek %}
+                                <div class="cikk-row">
+                                    <a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= JOBB HASÁB ================= -->
+        <div class="side-column-stream">
+            <!-- ROVAT: CSALÁD & TECH (Aszimmetrikus hirdetőboxokkal) -->
+            <div class="rovat-section" id="tech">
+                <div class="rovat-title">Család & Tech</div>
+                <div class="side-column-stream">
+                    {% for ujsag in news['Család & Tech'] %}
+                        <div class="ujsag-box-card">
+                            <img src="/logo_kepek/{{ ujsag.logo }}" class="ujsag-logo-img" alt="Logó">
+                            {% for cikk in ujsag.cikkek %}
+                                <div class="cikk-row">
+                                    <a href="{{ cikk.link }}" target="_blank" class="cikk-link">{{ cikk.title }}</a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- ASZIMMETRIKUS HIRDETÉSI BEÉKELÉS A HASÁBOK KÖZÉ -->
+                        {% if loop.index % 3 == 0 %}
+                            <div class="twn-mini-ad">
+                                <span class="ad-label">Hirdetési zóna</span>
+                                <span class="ad-text">Saját Hirdetési Felület — Foglaljon helyet!</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
     </div>
+
 </body>
 </html>
 """
-# 3. RÉSZLET: SZERVER INDÍTÁSA ÉS A .jpg.jpg KÉPEK KISZOLGÁLÁSA
+
 @app.route("/")
 def index():
     global STORED_NEWS
@@ -310,10 +374,13 @@ def index():
         STORED_NEWS = scrape_all_news()
     return render_template_string(HTML_TEMPLATE, news=STORED_NEWS)
 
-# BIZTONSÁGI CSATORNA: Egyenesen a főkönyvtárból olvassa be a képeket törés nélkül
 @app.route('/logo_kepek/<path:filename>')
 def serve_logos(filename):
     return send_from_directory('.', filename)
+
+@app.route('/friss_magazin.jpg')
+def serve_friss_magazin():
+    return send_from_directory('.', 'friss_magazin.jpg')
 
 @app.route("/frissites")
 def refresh():
