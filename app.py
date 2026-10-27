@@ -720,11 +720,12 @@ def index():
     current_config = load_config()
     return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, cfg=current_config)
 
-@app.route("/twn_logo.png")
+@app.route("/logo.png.png")
 def serve_logo():
     from flask import send_from_directory
     import os
-    return send_from_directory(os.getcwd(), "twn_logo.png")
+    return send_from_directory(os.getcwd(), "logo.png.png")
+
 
 
 @app.route("/hirdetes")
