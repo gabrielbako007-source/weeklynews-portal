@@ -253,7 +253,7 @@ HTML_TEMPLATE = """
         }
         
         .side-column-stream { display: flex; flex-direction: column; gap: 25px; }
-        .center-news-stream { display: flex; flex-direction: column; align-items: center; }
+        .center-news-stream { display: flex; flex-direction: column; align-items: center; width: 100%; }
         
         .main-magazine-cover { 
             width: 100%; 
@@ -276,7 +276,7 @@ HTML_TEMPLATE = """
         .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; }
-        .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-bottom: 15px; }
         .ujsag-logo-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; }
         
         .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
@@ -287,9 +287,12 @@ HTML_TEMPLATE = """
         .ad-label { font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
         .ad-text { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; text-decoration: none; }
         .ad-img { width: 100%; height: auto; border-radius: 4px; display: block; }
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 4px; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         
+        .video-box-container { width: 100%; background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 12px; box-sizing: border-box; margin-bottom: 20px; text-align: center; position: relative; }
+        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; border-radius: 4px; cursor: pointer; }
+        .video-wrapper video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
+        .audio-status-badge { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; font-size: 11px; border-radius: 4px; pointer-events: none; font-weight: bold; z-index: 10; display: flex; align-items: center; gap: 5px; }
+
         footer {
             background-color: #737373; 
             padding: 30px 20px;
@@ -359,17 +362,6 @@ HTML_TEMPLATE = """
             </div>
         </header>
         
-        <div class="nav-bar">
-            <a href="/frissites" class="btn-refresh">🔄 Frissítés</a>
-            <a href="#belfold" class="nav-item">Belföld</a>
-            <a href="#kulfold" class="nav-item">Külföld</a>
-            <a href="#gazdasag" class="nav-item">Gazdaság</a>
-            <a href="#vallas" class="nav-item">Vallás</a>
-            <a href="#tech" class="nav-item">Család & Tech</a>
-            <a href="/hirdetes" class="nav-item nav-item-marketing">💼 Hirdetés feladás</a>
-        </div>
-    </div>
-    
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
@@ -455,7 +447,6 @@ ADMIN_TEMPLATE = """
                 <select name="vallas_ad_type">
                     <option value="text" {% if cfg.ads.vallas_ad.type == 'text' %}selected{% endif %}>Sima Szöveg</option>
                     <option value="image" {% if cfg.ads.vallas_ad.type == 'image' %}selected{% endif %}>Banner (Kép URL)</option>
-                    <option value="youtube" {% if cfg.ads.vallas_ad.type == 'youtube' %}selected{% endif %}>YouTube Videó (ID)</option>
                 </select>
             </div>
             <div class="form-group"><label>Vallás Reklám Tartalom</label><input type="text" name="vallas_ad_content" value="{{ cfg.ads.vallas_ad.content }}"></div>
@@ -466,21 +457,19 @@ ADMIN_TEMPLATE = """
             <div class="video-box-grid">
                 <div class="grid-full"><strong style="color: #2ea6f2;">{{ i }}. Számú Videó Box</strong></div>
                 <div class="form-group grid-full">
-                    <label>Videó Forrás URL / YouTube ID</label>
+                    <label>Videó Forrás (.mp4 URL)</label>
                     <input type="text" name="video_src_{{ i }}" value="{{ cfg.video_boxes['box_' ~ i].src }}">
                 </div>
                 <div class="form-group">
                     <label>Indítási mód</label>
                     <select name="video_autoplay_{{ i }}">
                         <option value="muted" {% if cfg.video_boxes['box_' ~ i].autoplay == 'muted' %}selected{% endif %}>Némán induló (Muted Autoplay)</option>
-                        <option value="click" {% if cfg.video_boxes['box_' ~ i].autoplay == 'click' %}selected{% endif %}>Kattintásra indul</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Kattintási interakció</label>
                     <select name="video_click_{{ i }}">
                         <option value="sound" {% if cfg.video_boxes['box_' ~ i].click == 'sound' %}selected{% endif %}>Kattintásra hangosodik</option>
-                        <option value="fullscreen" {% if cfg.video_boxes['box_' ~ i].click == 'fullscreen' %}selected{% endif %}>Teljes képernyőre vált</option>
                     </select>
                 </div>
             </div>
@@ -540,7 +529,6 @@ def admin():
         current_config["ads"]["vallas_ad"]["content"] = request.form.get("vallas_ad_content")
         current_config["ads"]["vallas_ad"]["url"] = request.form.get("vallas_ad_url")
         
-        # A 9 darab videó box adatainak dinamikus mentése post kérésből
         for i in range(1, 10):
             current_config["video_boxes"][f"box_{i}"]["src"] = request.form.get(f"video_src_{i}")
             current_config["video_boxes"][f"box_{i}"]["autoplay"] = request.form.get(f"video_autoplay_{i}")
