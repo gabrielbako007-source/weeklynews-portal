@@ -364,7 +364,7 @@ HTML_TEMPLATE = """
         overflow-x: auto !important;
         white-space: nowrap !important;
         width: 100% !important;
-        padding: 12px 5px !important;
+        padding: 2px 5px !important;
         box-sizing: border-box !important;
         -webkit-overflow-scrolling: touch;
     }
