@@ -349,13 +349,13 @@ HTML_TEMPLATE = """
 
 @media (max-width: 768px) {
     /* 1. Kiszabadítjuk a rögzített fejrészt a korlátozások alól */
-    .frozen-top-header {
-        height: auto !important;
-        position: relative !important;
-        display: block !important;
-        width: 100% !important;
-    }
-
+           .frozen-top-header {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1000 !important;
+            width: 100% !important;
+            display: block !important;
+        }
     /* 2. A menüt tartalmazó sávot kényszerítjük egymás mellé és oldalra görgethetővé tesszük */
     .nav-bar {
         display: flex !important;
