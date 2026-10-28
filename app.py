@@ -276,10 +276,10 @@ HTML_TEMPLATE = """
         .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; }
-        .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .ujsag-logo-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; }
+                .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: relative; overflow: hidden; height: 180px; }
+        .ujsag-logo-img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; margin-bottom: 0; border: none; }
         
-        .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
+        .cikk-row { width: 100%; border-top: none; padding: 8px; margin-top: 0; text-align: left; position: absolute; bottom: 0; left: 0; background: rgba(0, 0, 0, 0.65); box-sizing: border-box; }
         .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
         .cikk-link:hover { color: #2ea6f2; text-decoration: underline; }
         
