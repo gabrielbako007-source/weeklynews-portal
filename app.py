@@ -356,6 +356,10 @@ HTML_TEMPLATE = """
             width: 100% !important;
             display: block !important;
         }
+        .three-column-grid-container {
+            margin-top: 10px !important;
+            padding-top: 0 !important;
+        }
     /* 2. A menüt tartalmazó sávot kényszerítjük egymás mellé és oldalra görgethetővé tesszük */
     .nav-bar {
         display: flex !important;
