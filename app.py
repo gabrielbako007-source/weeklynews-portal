@@ -502,6 +502,21 @@ def serve_top_logo():
     import os
     return send_from_directory(os.getcwd(), "twn_logo.png")
 
+@app.route("/mediaajanlat")
+def mediaajanlat():
+    szoveg = "<h3>TWN News Médiaajánlat & Hirdetési Felületek</h3><p>Szeretné termékét, szolgáltatását vagy hirdetését elhelyezni a felületünkön?</p><p><strong>Elérhető felületeink:</strong> Kiemelt képes bannerek, beágyazott hirdetések a hasábok között, és egyedi PR cikkek.</p><p><strong>Kapcsolatfelvétel és ajánlatkérés:</strong> info@twnnews.hu</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Médiaajánlat", tartalom=szoveg)
+
+@app.route("/kapcsolat")
+def kapcsolat():
+    szoveg = "<h3>Szerkesztőség és Kiadó</h3><p><strong>Kiadja:</strong> [A Te Cégfelelősöd / Kiadód neve]<br><strong>Alapító-főszerkesztő:</strong> [A Te Neved]</p><p><strong>Szerkesztőség elérhetősége:</strong><br>E-mail: <strong>info@twnnews.hu</strong><br>Telefon: [A Te Telefonszámod]</p><p><strong>Ügyfélszolgálat és terjesztés:</strong><br>Bármilyen észrevétel, előfizetői vagy terjesztési kérdés esetén forduljon hozzánk bizalommal a fenti e-mail címen. Visszajelzési időnk 24 órán belül garantált.</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Kapcsolat", tartalom=szoveg)
+
+@app.route("/logo.png.png")
+def serve_footer_logo():
+    import os
+    return send_from_directory(os.getcwd(), "logo.png.png")
+
 # TŰPONTOS BLUEPRINT REGISZTRÁCIÓ ANGOLUL
 from admin_rendszer import admin_bp
 app.register_blueprint(admin_bp)
