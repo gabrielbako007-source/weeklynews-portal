@@ -196,7 +196,10 @@ HTML_TEMPLATE = """
         .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; }
         .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .ujsag-logo-img { width: 90px; height: 90px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; object-fit: cover; }
+        
+        /* FIX SZOFTVERMÉRNÖKI LOGÓBEÁLLÍTÁS: GARANTÁLTAN NEM SPREAD EL A KÉP */
+        .ujsag-logo-img { width: 90px !important; height: 90px !important; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; object-fit: cover; display: block; }
+        
         .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
         .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
         .cikk-link:hover { color: #2ea6f2; text-decoration: underline; }
@@ -218,7 +221,7 @@ HTML_TEMPLATE = """
         @media (max-width: 768px) {
             .frozen-top-header { position: sticky !important; top: 0 !important; z-index: 1000 !important; width: 100% !important; display: block !important; }
             .three-column-grid-container { margin-top: 10px !important; padding-top: 0 !important; }
-            .nav-bar { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; overflow-x: auto !important; white-space: nowrap !important; width: 100% !important; padding: 2px 5px !important; box-sizing: border-box !important; -webkit-overflow-scrolling: touch; }
+            .nav-bar { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; overflow-x: auto !important; white-space: nowrap !important; width: 100% !important; padding: 2px 5px !important; box-sizing: border-box !important; }
             .nav-bar a.nav-item, .nav-bar a.btn-refresh { display: inline-block !important; flex-shrink: 0 !important; margin-right: 15px !important; float: none !important; }
             .footer-bottom-dark-bar, footer, .footer { display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 10px !important; padding: 20px !important; width: 100% !important; box-sizing: border-box !important; }
             .footer-bottom-dark-bar div, footer div, .footer div { display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 10px !important; width: 100% !important; }
@@ -379,7 +382,7 @@ HTML_TEMPLATE = """
                 </div>
             </div>
         </div>
-    </div> <!-- GRID LEZÁRÁSA -->
+    </div> <!-- TÖKÉLETES LEZÁRÁS: FIXÁLVA A HÁRMASSÁG -->
     
     <footer>
         <div class="footer-top-container">
@@ -420,10 +423,19 @@ ADMIN_TEMPLATE = """
 <label>Tartalom:</label><input type="text" name="vallas_ad_content" value="{{ cfg.ads.vallas_ad.content }}"><br>
 <label>Cél URL:</label><input type="text" name="vallas_ad_url" value="{{ cfg.ads.vallas_ad.url }}"><br>
 <button type="submit">Mentés</button></form></body></html>
-"""# ================= FLASK KÓDLOGIKA ÉS VÉGPONTOK =================
+"""
+# ================= FLASK KÓDLOGIKA ÉS VÉGPONTOK =================
+@app.route("/")
+def index():
+    global STORED_NEWS
+    if not STORED_NEWS:
+        STORED_NEWS = scrape_all_news()
+    current_config = load_config()
+    return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, cfg=current_config)
+
 @app.route("/impresszum")
 def impresszum():
-    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p><h3>Felelősségi nyilatkozat:</h3><p>A TWN News felületén megjelenő hírek jelentős része egy automatizált systemen keresztül, külső sajtóorgánumok nyilvánosan elérhető RSS csatornáiból származik.</p>"
+    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p><h3>Felelősségi nyilatkozat:</h3><p>A TWN News felületén megjelenő hírek jelentős része egy automatizált rendszeren keresztül, külső sajtóorgánumok nyilvánosan elérhető RSS csatornáiból származik.</p>"
     return render_template_string(JOGI_TEMPLATE, cim="Impresszum", tartalom=szoveg)
 
 @app.route("/aszf")
@@ -483,11 +495,10 @@ def serve_top_logo():
     import os
     return send_from_directory(os.getcwd(), "twn_logo.png")
 
-# TŰPONTOS BLUEPRINT REGISZTRÁCIÓ ANGOLUL, HIBÁTLAN ALÁHÚZÁSOKKAL
+# TŰPONTOS BLUEPRINT REGISZTRÁCIÓ AZ ADMIN_RENDSZER FÁJLODBÓL
 from admin_rendszer import admin_bp
 app.register_blueprint(admin_bp)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
