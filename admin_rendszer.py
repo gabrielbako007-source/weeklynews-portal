@@ -88,7 +88,7 @@ ADMIN_PANEL_TEMPLATE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weekly News Szerkesztőség — Canva & Stripe Központ</title>
-    <link rel="stylesheet" href="https://unpkg.com">
+        <link rel="stylesheet" href="https://unpkg.com">
     <script src="https://unpkg.com"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background: #1e293b; color: #fff; padding: 0; margin:0; }
