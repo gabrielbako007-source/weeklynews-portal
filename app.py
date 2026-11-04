@@ -382,9 +382,11 @@ HTML_TEMPLATE = """
     
     <footer>
            <footer>
+           <footer>
         <div class="footer-top-container">
             <img src="/logo.png.png">
         </div>
+
 
         <div class="footer-links-grid">
             <a href="/impresszum" class="footer-link">I Impresszum</a>
@@ -404,24 +406,35 @@ HTML_TEMPLATE = """
 """
 
 JOGI_TEMPLATE = """
-<html><body style="font-family:sans-serif; background:#1e293b; color:#fff; padding:40px;">
-<h2>{{ cim }}</h2><div>{{ tartalom | safe }}</div><br><a href="/" style="color:#38bdf8;">⬅ Vissza</a>
-</body></html>
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ cim }} — THE WEEKLY TWN NEWS</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #1e293b; color: #fff; padding: 40px 20px; line-height: 1.6; margin: 0; }
+        .box { max-width: 800px; margin: 40px auto; background: #0f172a; padding: 40px; border-radius: 8px; border: 2px solid #ffffff; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+        h1 { color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 10px; font-size: 2rem; text-transform: uppercase; margin-top: 0; }
+        h3 { color: #ff2a2a; margin-top: 25px; }
+        p { color: #cbd5e1; font-size: 1.05rem; }
+        .back { display: inline-block; margin-top: 30px; background: #ff2a2a; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .footer-logo-area { text-align: center; margin-bottom: 20px; }
+        .footer-logo-area img { max-width: 280px; width: 100%; height: auto; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="footer-logo-area">
+            <img src="/logo.png.png">
+        </div>
+        <h1>{{ cim }}</h1>
+        <div>{{ tartalom | safe }}</div>
+        <a href="/" class="back">⬅ Vissza a főoldalra</a>
+    </div>
+</body>
+</html>
 """
-ADMIN_TEMPLATE = """
-<html><body style="font-family:sans-serif; background:#0f172a; color:#fff; padding:40px;">
-<h2>TWN Rendszerbeállítások</h2><form method="POST">
-<h3>Borító Linkek</h3>
-<label>Külföld:</label><input type="text" name="cover_kulfold" value="{{ cfg.cover_links.kulfold_politika }}"><br>
-<label>Venia:</label><input type="text" name="cover_venia" value="{{ cfg.cover_links.venia_sokk }}"><br>
-<label>Vallás:</label><input type="text" name="cover_vallas" value="{{ cfg.cover_links.vallas_hit }}"><br>
-<label>Tech:</label><input type="text" name="cover_tech" value="{{ cfg.cover_links.tudomany_tech }}"><br>
-<h3>Hirdetések</h3>
-<label>Típus:</label><input type="text" name="vallas_ad_type" value="{{ cfg.ads.vallas_ad.type }}"><br>
-<label>Tartalom:</label><input type="text" name="vallas_ad_content" value="{{ cfg.ads.vallas_ad.content }}"><br>
-<label>Cél URL:</label><input type="text" name="vallas_ad_url" value="{{ cfg.ads.vallas_ad.url }}"><br>
-<button type="submit">Mentés</button></form></body></html>
-"""
+
 # ================= FLASK KÓDLOGIKA ÉS VÉGPONTOK =================
 @app.route("/")
 def index():
