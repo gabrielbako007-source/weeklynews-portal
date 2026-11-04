@@ -421,15 +421,10 @@ JOGI_TEMPLATE = """
         h3 { color: #ff2a2a; margin-top: 25px; }
         p { color: #cbd5e1; font-size: 1.05rem; }
         .back { display: inline-block; margin-top: 30px; background: #ff2a2a; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
-        .footer-logo-area { text-align: center; margin-bottom: 20px; }
-        .footer-logo-area img { max-width: 280px; width: 100%; height: auto; display: block; margin: 0 auto; }
     </style>
 </head>
 <body>
     <div class="box">
-        <div class="footer-logo-area">
-            <img src="/logo.png.png">
-        </div>
         <h1>{{ cim }}</h1>
         <div>{{ tartalom | safe }}</div>
         <a href="/" class="back">⬅ Vissza a főoldalra</a>
@@ -437,6 +432,7 @@ JOGI_TEMPLATE = """
 </body>
 </html>
 """
+
 
 # ================= FLASK KÓDLOGIKA ÉS VÉGPONTOK =================
 @app.route("/")
