@@ -462,7 +462,7 @@ HTML_TEMPLATE = """
             <a href="#gazdasag" class="nav-item">Gazdaság</a>
             <a href="#vallas" class="nav-item">Vallás</a>
             <a href="#tech" class="nav-item">Család & Tech</a>
-            <a href="/hirdetes" class="nav-item nav-item-marketing">💼 Hirdetés feladás</a>
+            
         </div>
     </div>
     <div class="three-column-grid-container">
@@ -608,7 +608,7 @@ HTML_TEMPLATE = """
                 <a href="/adatvedelem" class="footer-link">I Adatvédelem</a>
                 <a href="/hirdetes" class="footer-link">I Médiaajánlat</a>
                 <a href="/hirdetes" class="footer-link">I Kapcsolat</a>
-                <a href="/admin" class="footer-link" style="color: #38bdf8;">I Admin belépés</a>
+                
             </div>
         </div>
     </footer>
