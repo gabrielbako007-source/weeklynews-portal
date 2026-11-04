@@ -413,7 +413,7 @@ JOGI_TEMPLATE = """
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>{{ cim }} — THE WEEKLY TWN NEWS</title>
+    <title>{{ cim }} - THE WEEKLY TWN NEWS</title>
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #1e293b; color: #fff; padding: 40px 20px; line-height: 1.6; margin: 0; }
         .box { max-width: 800px; margin: 40px auto; background: #0f172a; padding: 40px; border-radius: 8px; border: 2px solid #ffffff; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
