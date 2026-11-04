@@ -39,7 +39,8 @@ DEFAULT_CONFIG = {
             "published": True
         }
     ],
-    "magazin_ads": [],
+        "magazin_ads": [],
+    "ads": [],
     "felhasznalok": {
         "teszt_olvaso@twn.hu": {
             "password_hash": "dummy_hash",
