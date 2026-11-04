@@ -433,7 +433,6 @@ JOGI_TEMPLATE = """
 </html>
 """
 
-
 # ================= FLASK KÓDLOGIKA ÉS VÉGPONTOK =================
 @app.route("/")
 def index():
