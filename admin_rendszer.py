@@ -229,9 +229,9 @@ ADMIN_PANEL_TEMPLATE = """
     <title>Weekly News Szerkesztőség - Canva & Stripe Központ</title>
     <link rel="stylesheet" href="https://unpkg.com">
     <script src="https://unpkg.com"></script>
-    <style>
-        body { font-family: 'Arial', sans-serif; background: #1e293b; color: #fff; padding: 0; margin:0; }
-        .admin-wrap { max-width: 1400px; margin: 30px auto; background: #0f172a; border-radius: 8px; border: 1px solid #475569; overflow:hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        <style>
+        body { font-family: 'Arial', sans-serif; background: #1e293b; color: #fff; padding: 0; margin: 0; }
+        .admin-wrap { max-width: 1400px; margin: 30px auto; background: #0f172a; border-radius: 8px; border: 1px solid #475569; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .tabs-header { display: flex; background: #0f172a; border-bottom: 2px solid #ff2a2a; flex-wrap: wrap; }
         .tab-btn { background: none; border: 0; color: #cbd5e1; padding: 15px 25px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; text-transform: uppercase; }
         .tab-btn.active { color: #ffffff; background: #ff2a2a; }
