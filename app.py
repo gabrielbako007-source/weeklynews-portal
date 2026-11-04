@@ -277,7 +277,6 @@ HTML_TEMPLATE = """
         .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
         .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
         .cikk-link:hover { color: #2ea6f2; text-decoration: underline; }
-        
         .twn-mini-ad { background-color: #1a202c; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; width: 100%; box-sizing: border-box; text-align: center; margin: 10px 0; overflow: hidden; }
         .ad-label { font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
         .ad-text { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; text-decoration: none; }
@@ -320,89 +319,90 @@ HTML_TEMPLATE = """
             line-height: 1.6;
         }
         .footer-bottom-container { max-width: 1400px; margin: 0 auto; }
-@media (max-width: 768px) {
-    .frozen-top-header {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 1000 !important;
-        width: 100% !important;
-        display: block !important;
-    }
-    .three-column-grid-container {
-        margin-top: 10px !important;
-        padding-top: 0 !important;
-    }
-    .nav-bar {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        white-space: nowrap !important;
-        width: 100% !important;
-        padding: 2px 5px !important;
-        box-sizing: border-box !important;
-        -webkit-overflow-scrolling: touch;
-    }
-    .nav-bar a.nav-item, .nav-bar a.btn-refresh {
-        display: inline-block !important;
-        flex-shrink: 0 !important;
-        margin-right: 15px !important;
-        float: none !important;
-    }
-    .nav-bar a.nav-item-marketing, [href*="hirdetes"] {
-        display: block !important;
-        width: 90% !important;
-        margin: 15px auto 5px auto !important;
-        text-align: center !important;
-        clear: both !important;
-        float: none !important;
-    }
-    .footer-bottom-dark-bar, footer, .footer {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        text-align: center !important;
-        gap: 10px !important;
-        padding: 20px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    .footer-bottom-dark-bar div, footer div, .footer div {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
-        gap: 10px !important;
-        width: 100% !important;
-    }
-    .footer-bottom-dark-bar a, footer a, .footer a {
-        display: inline-block !important;
-        font-size: 13px !important;
-        white-space: nowrap !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    .footer-bottom-dark-bar p, footer p, .footer-bottom-dark-bar span, .footer p {
-        display: block !important;
-        width: 100% !important;
-        white-space: nowrap !important;
-        font-size: 12px !important;
-        text-align: center !important;
-        margin-top: 10px !important;
-    }
-}
-@media (min-width: 769px) {
-    .footer-bottom-dark-bar div, footer div, .footer div, .footer-links-grid {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: center !important;
-        gap: 25px !important;
-        width: 100% !important;
-    }
-    .footer-bottom-dark-bar a, footer a, .footer a {
-        display: inline-block !important;
-        white-space: nowrap !important;
-    }
-}
+        
+        @media (max-width: 768px) {
+            .frozen-top-header {
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 1000 !important;
+                width: 100% !important;
+                display: block !important;
+            }
+            .three-column-grid-container {
+                margin-top: 10px !important;
+                padding-top: 0 !important;
+            }
+            .nav-bar {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+                width: 100% !important;
+                padding: 2px 5px !important;
+                box-sizing: border-box !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            .nav-bar a.nav-item, .nav-bar a.btn-refresh {
+                display: inline-block !important;
+                flex-shrink: 0 !important;
+                margin-right: 15px !important;
+                float: none !important;
+            }
+            .nav-bar a.nav-item-marketing, [href*="hirdetes"] {
+                display: block !important;
+                width: 90% !important;
+                margin: 15px auto 5px auto !important;
+                text-align: center !important;
+                clear: both !important;
+                float: none !important;
+            }
+            .footer-bottom-dark-bar, footer, .footer {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 10px !important;
+                padding: 20px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .footer-bottom-dark-bar div, footer div, .footer div {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                gap: 10px !important;
+                width: 100% !important;
+            }
+            .footer-bottom-dark-bar a, footer a, .footer a {
+                display: inline-block !important;
+                font-size: 13px !important;
+                white-space: nowrap !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .footer-bottom-dark-bar p, footer p, .footer-bottom-dark-bar span, .footer p {
+                display: block !important;
+                width: 100% !important;
+                white-space: nowrap !important;
+                font-size: 12px !important;
+                text-align: center !important;
+                margin-top: 10px !important;
+            }
+        }
+        @media (min-width: 769px) {
+            .footer-bottom-dark-bar div, footer div, .footer div, .footer-links-grid {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: center !important;
+                gap: 25px !important;
+                width: 100% !important;
+            }
+            .footer-bottom-dark-bar a, footer a, .footer a {
+                display: inline-block !important;
+                white-space: nowrap !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -483,7 +483,9 @@ HTML_TEMPLATE = """
         <!-- ================= KÖZÉPSŐ HASÁB ================= -->
         <div class="center-news-stream">
             <div class="main-magazine-cover">
-                <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
+                <a href="/admin">
+                    <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
+                </a>
             </div>
             <div class="rovat-section" id="belfold">
                 <div class="rovat-title">Belföld hírei</div>
@@ -552,7 +554,7 @@ HTML_TEMPLATE = """
     </div> <!-- GRID LEZÁRÁSA -->
     <footer>
         <div class="footer-top-container">
-            <img src="/logo.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto 15px auto;">
+            <img src="/logó.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto 15px auto;">
             <div class="footer-links-grid">
                 <a href="/impresszum" class="footer-link">I Impresszum</a>
                 <a href="/aszf" class="footer-link">I ÁSZF</a>
@@ -571,6 +573,7 @@ HTML_TEMPLATE = """
 </body>
 </html>
 """
+
 # ================= JOGI ÉS MARKETING SABLONOK =================
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
@@ -657,6 +660,10 @@ def serve_logos(filename):
 @app.route('/friss_magazin.jpg')
 def serve_friss_magazin():
     return send_from_directory('.', 'friss_magazin.jpg')
+
+@app.route("/logó.png.png")
+def serve_footer_logo():
+    return send_from_directory(os.getcwd(), "logó.png.png")
 
 @app.route("/frissites")
 def refresh():
