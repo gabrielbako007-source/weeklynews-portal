@@ -184,21 +184,14 @@ HTML_TEMPLATE = """
             width: 100%; 
             height: auto; 
         }
-        .cover-hotspot { position: absolute; background: rgba(255,255,255,0); transition: background 0.2s ease; cursor: pointer; }
-        .cover-hotspot:hover { background: rgba(255,255,255,0.15); }
-        
-        .hs-kulfold { top: 35%; left: 35%; width: 28%; height: 5%; border-radius: 10px; }
-        .hs-venia { top: 66%; left: 52%; width: 44%; height: 16%; }
-        .hs-vallas { top: 76%; left: 3%; width: 45%; height: 12%; }
-        .hs-tech { top: 88%; left: 51%; width: 46%; height: 9%; border-radius: 10px; }
         
         .rovat-section { margin-bottom: 3.5rem; width: 100%; }
         .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; }
         .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         
-        /* FIX SZOFTVERMÉRNÖKI LOGÓBEÁLLÍTÁS: GARANTÁLTAN NEM SPREAD EL A KÉP */
-        .ujsag-logo-img { width: 90px !important; height: 90px !important; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; object-fit: cover; display: block; }
+        /* EREDETI NAGY LOGÓK ÉS IKONOK (NEM SÉRÜLT) */
+        .ujsag-logo-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; }
         
         .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
         .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
@@ -213,6 +206,10 @@ HTML_TEMPLATE = """
         
         footer { background-color: #737373; padding: 30px 20px; margin-top: 5rem; border-top: 4px solid #ff2a2a; }
         .footer-top-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 30px; }
+        
+        /* NAGY EREDETI FEHÉR LOGÓ A LÁBLÉCBEN (NEM SÉRÜLT) */
+        .footer-top-container img { max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto 15px auto; }
+        
         .footer-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 30px; }
         .footer-link { color: #ffffff; text-decoration: none; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
         .footer-bottom-dark-bar { background-color: #171717; padding: 25px 20px; font-size: 0.8rem; color: #a3a3a3; line-height: 1.6; }
@@ -310,11 +307,10 @@ HTML_TEMPLATE = """
         <!-- ================= KÖZÉPSŐ HASÁB ================= -->
         <div class="center-news-stream">
             <div class="main-magazine-cover">
-                <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
-                <a href="{{ cfg.cover_links.kulfold_politika }}" target="_blank" class="cover-hotspot hs-kulfold" title="Külföld & Politika"></a>
-                <a href="{{ cfg.cover_links.venia_sokk }}" target="_blank" class="cover-hotspot hs-venia" title="Venia-Sokk"></a>
-                <a href="{{ cfg.cover_links.vallas_hit }}" target="_blank" class="cover-hotspot hs-vallas" title="Vallás, Hit & Erkölcs"></a>
-                <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
+                <!-- EGYETLEN NAGY KÖZÖS LINK A TELJES BORÍTÓRA: BÁRHOVA KATTINTANAK, ÁTVISZ A 2. RENDSZERBE -->
+                <a href="/magazin/olvaso" target="_blank" style="display: block; width: 100%; height: auto; text-decoration: none;">
+                    <img src="/friss_magazin.jpg" alt="The Weekly News Címlap" style="width: 100%; height: auto; display: block;">
+                </a>
             </div>
             
             <div class="rovat-section" id="belfold">
@@ -382,11 +378,11 @@ HTML_TEMPLATE = """
                 </div>
             </div>
         </div>
-    </div> <!-- TÖKÉLETES LEZÁRÁS: FIXÁLVA A HÁRMASSÁG -->
+    </div> <!-- FAJALIS GRID LEZÁRÁS -->
     
     <footer>
         <div class="footer-top-container">
-            <img src="/logo.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto 15px auto;">
+            <img src="/logo.png.png" alt="Főlogó">
         </div>
         <div class="footer-links-grid">
             <a href="/impresszum" class="footer-link">I Impresszum</a>
@@ -435,7 +431,7 @@ def index():
 
 @app.route("/impresszum")
 def impresszum():
-    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p><h3>Felelősségi nyilatkozat:</h3><p>A TWN News felületén megjelenő hírek jelentős része egy automatizált rendszeren keresztül, külső sajtóorgánumok nyilvánosan elérhető RSS csatornáiból származik.</p>"
+    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p><h3>Felelősségi nyilatkozat:</h3><p>A TWN News felületén megjelenő hírek jelentős része egy automatizált systemen keresztül, külső sajtóorgánumok nyilvánosan elérhető RSS csatornáiból származik.</p>"
     return render_template_string(JOGI_TEMPLATE, cim="Impresszum", tartalom=szoveg)
 
 @app.route("/aszf")
@@ -495,7 +491,7 @@ def serve_top_logo():
     import os
     return send_from_directory(os.getcwd(), "twn_logo.png")
 
-# TŰPONTOS BLUEPRINT REGISZTRÁCIÓ AZ ADMIN_RENDSZER FÁJLODBÓL
+# TŰPONTOS BLUEPRINT REGISZTRÁCIÓ ANGOLUL
 from admin_rendszer import admin_bp
 app.register_blueprint(admin_bp)
 
