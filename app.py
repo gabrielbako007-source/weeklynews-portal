@@ -4,19 +4,18 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask, render_template_string, redirect, url_for, send_from_directory, request, session
 
-# A 2. RENDSZER BLUEPRINT MOTORJÁNAK BEEMELÉSE
+# A 2. RENDSZER BLUEPRINT MOTORJÁNAK SZOFTVERES BEEMELÉSE
 from admin_rendszer import admin_bp
 
 app = Flask(__name__)
 app.secret_key = "twn_super_secret_key_for_session"
 
-# A 2. RENDSZER BLUEPRINT REGISZTRÁCIÓJA
+# A 2. RENDSZER KÖZÖS INDÍTÁSÚ BLUEPRINT REGISZTRÁCIÓJA
 app.register_blueprint(admin_bp)
 
 CONFIG_FILE = "twn_config.json"
 ADMIN_PASSWORD = "twnadmin2026"
 
-# AZ EREDETI CONFIG STRUKTÚRA TELJES VISSZAÁLLÍTÁSA
 DEFAULT_CONFIG = {
     "cover_links": {
         "kulfold_politika": "https://twnnews.hu",
@@ -119,7 +118,6 @@ def scrape_all_news():
                 "cikkek": fake_fetch_news(ujsag["id"], ujsag["name"], ujsag["site"])
             })
     return categories
-
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
@@ -228,6 +226,50 @@ HTML_TEMPLATE = """
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
+        .nav-bar { background-color: #0f172a; padding: 0px 1rem; display: flex; justify-content: center; border-bottom: 1px solid #475569; flex-wrap: wrap; }
+        .nav-item { color: white; font-family: sans-serif; font-weight: bold; padding: 1.1rem 1.5rem; text-decoration: none; font-size: 1.05rem; }
+        .nav-item-marketing { color: #38bdf8; border-left: 1px solid #475569; }
+        .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
+        
+        .three-column-grid-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            gap: 2rem;
+            max-width: 1700px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        @media (max-width: 1300px) {
+            .three-column-grid-container { grid-template-columns: 1fr; }
+        }
+        .side-column-stream { display: flex; flex-direction: column; gap: 25px; }
+        .center-news-stream { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .main-magazine-cover { 
+            display: block;
+            width: 100%; 
+            max-width: 480px; 
+            margin: 0 auto 3rem auto; 
+            border: 2px solid #fff; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5); 
+            position: relative;
+        }
+        .main-magazine-cover img { 
+            display: block;
+            margin: 0 auto;
+            width: 100%; 
+            height: auto; 
+        }
+        .rovat-section { margin-bottom: 3.5rem; width: 100%; }
+        .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        
         .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; }
         .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .ujsag-logo-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; }
@@ -256,18 +298,6 @@ HTML_TEMPLATE = """
             align-items: center;
             flex-wrap: wrap;
             gap: 30px;
-        }
-        .footer-logo-area {
-            background: #fff;
-            padding: 15px 25px;
-            border-radius: 8px;
-            display: inline-block;
-        }
-        .footer-logo-text {
-            color: #1e293b;
-            font-family: 'Bodoni Moda', serif;
-            font-size: 2.2rem;
-            font-weight: bold;
         }
         .footer-links-grid {
             display: grid;
@@ -390,7 +420,6 @@ HTML_TEMPLATE = """
             <a href="#gazdasag" class="nav-item">Gazdaság</a>
             <a href="#vallas" class="nav-item">Vallás</a>
             <a href="#tech" class="nav-item">Család & Tech</a>
-            <a href="/hirdetes" class="nav-item nav-item-marketing">💼 Hirdetés feladás</a>
         </div>
     </div>
     <div class="three-column-grid-container">
@@ -451,14 +480,9 @@ HTML_TEMPLATE = """
                 </div>
             </div>
         </div>
-        <!-- ================= KÖZÉPSŐ HASÁB ================= -->
         <div class="center-news-stream">
             <div class="main-magazine-cover">
                 <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
-                <a href="{{ cfg.cover_links.kulfold_politika }}" target="_blank" class="cover-hotspot hs-kulfold" title="Külföld & Politika"></a>
-                <a href="{{ cfg.cover_links.venia_sokk }}" target="_blank" class="cover-hotspot hs-venia" title="Venia-Sokk"></a>
-                <a href="{{ cfg.cover_links.vallas_hit }}" target="_blank" class="cover-hotspot hs-vallas" title="Vallás, Hit & Erkölcs"></a>
-                <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
             </div>
             <div class="rovat-section" id="belfold">
                 <div class="rovat-title">Belföld hírei</div>
@@ -531,8 +555,6 @@ HTML_TEMPLATE = """
                 <a href="/impresszum" class="footer-link">I Impresszum</a>
                 <a href="/aszf" class="footer-link">I ÁSZF</a>
                 <a href="/adatvedelem" class="footer-link">I Adatvédelem</a>
-                <a href="/hirdetes" class="footer-link">I Médiaajánlat</a>
-                <a href="/magazin/titkos-admin" class="footer-link" style="color: #ff2a2a; text-shadow: 0 0 10px rgba(255,42,42,0.3);">I Szerkesztőségi Belépés</a>
             </div>
         </div>
     </footer>
@@ -546,7 +568,7 @@ HTML_TEMPLATE = """
 </html>
 """
 
-# ================= JOGI ÉS MARKETING SABLONOK =================
+# ================= JOGI SABLONOK =================
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
@@ -571,32 +593,6 @@ JOGI_TEMPLATE = """
 </html>
 """
 
-MARKETING_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="hu">
-<head>
-    <meta charset="UTF-8">
-    <title>Hirdessen a TWN News-on</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #1e293b; color: #fff; text-align: center; padding: 50px 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #0f172a; padding: 30px; border-radius: 8px; border: 1px solid #475569; }
-        h1 { color: #38bdf8; }
-        p { line-height: 1.6; color: #cbd5e1; }
-        .back-btn { display: inline-block; margin-top: 20px; background: #ff2a2a; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>TWN News Médiaajánlat</h1>
-        <p>Szeretné termékét, szolgáltatását vagy hirdetését elhelyezni a felületünkön?</p>
-        <p><strong>Elérhető felületeink:</strong> Kiemelt képes bannerek, beágyazott hirdetések a hasábok között, és egyedi PR cikkek.</p>
-        <p>Kapcsolatfelvétel: <strong>info@twnnews.hu</strong></p>
-        <a href="/" class="back-btn">⬅ Vissza a címlapra</a>
-    </div>
-</body>
-</html>
-"""
-
 # ================= FLASK ÚTVONALAK (ROUTES) =================
 @app.route("/")
 def index():
@@ -605,10 +601,6 @@ def index():
         STORED_NEWS = scrape_all_news()
     current_config = load_config()
     return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, cfg=current_config)
-
-@app.route("/hirdetes")
-def hirdetes():
-    return render_template_string(MARKETING_TEMPLATE)
 
 @app.route("/impresszum")
 def impresszum():
@@ -622,7 +614,7 @@ def aszf():
 
 @app.route("/adatvedelem")
 def adatvedelem():
-    szoveg = "<h3>1. Adatkezelés</h3><p>A TWN News kizárólag üzleti kapcsolattartás céljából kezel személyes adatokat (nevet és e-mail címet).</p>"
+    szoveg = "<h3>1. Adatkezelés</h3><p>A TWN News kizárójal üzleti kapcsolattartás céljából kezel személyes adatokat (nevet és e-mail címet).</p>"
     return render_template_string(JOGI_TEMPLATE, cim="Adatvédelmi Tájékoztató (GDPR)", tartalom=szoveg)
 
 @app.route('/logo_kepek/<path:filename>')
@@ -643,7 +635,7 @@ def refresh():
 def serve_top_logo():
     return send_from_directory(os.getcwd(), "twn_logo.png")
 
-# A FIXEN LEGALULRA HELYEZETT KÖZÖS SZERVER INDÍTÓBLOKK
+# A FIXEN LEGALULRA HELYEZETT KÖZÖS INDÍTÓBLOKK
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=True)
