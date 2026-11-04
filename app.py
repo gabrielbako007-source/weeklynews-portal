@@ -524,11 +524,12 @@ HTML_TEMPLATE = """
             </div>
         </div>
         <!-- ================= KÖZÉPSŐ HASÁB ================= -->
-        <div class="main-magazine-cover">
-    <a href="/magazin/olvaso" target="_blank" style="display: block; width: 100%; height: 100%;">
-        <img src="/friss_magazin.jpg" alt="The Weekly News Címlap" style="width: 100%; height: auto; display: block;">
+  <div class="main-magazine-cover" style="display: block; width: 100%; max-width: 480px; margin: 0 auto 3rem auto; height: auto; box-shadow: none; border: none;">
+    <a href="/magazin/olvaso" target="_blank" style="display: block; width: 100%; height: auto; text-decoration: none;">
+        <img src="/friss_magazin.jpg" alt="The Weekly News Címlap" style="width: 100%; height: auto; display: block; border: 2px solid #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.5);">
     </a>
 </div>
+
 
             <div class="rovat-section" id="belfold">
                 <div class="rovat-title">Belföld hírei</div>
@@ -797,7 +798,7 @@ def serve_top_logo():
     import os
     return send_from_directory(os.getcwd(), "twn_logo.png")
 
-from admin_rendszer import admin_bp
+from magazin_fajl_neve import admin_bp
 app.register_blueprint(admin_bp)
 
 if __name__ == "__main__":
