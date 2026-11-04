@@ -381,9 +381,11 @@ HTML_TEMPLATE = """
     </div> <!-- FAJALIS GRID LEZÁRÁS -->
     
     <footer>
+           <footer>
         <div class="footer-top-container">
-            <img src="/logo.png.png" alt="Főlogó">
+            <img src="/logo.png.png">
         </div>
+
         <div class="footer-links-grid">
             <a href="/impresszum" class="footer-link">I Impresszum</a>
             <a href="/aszf" class="footer-link">I ÁSZF</a>
