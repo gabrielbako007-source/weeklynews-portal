@@ -406,7 +406,7 @@ HTML_TEMPLATE = """
     </div>
 </body>
 </html>
-
+"""
 
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
