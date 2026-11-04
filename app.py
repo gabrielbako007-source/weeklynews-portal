@@ -384,13 +384,14 @@ HTML_TEMPLATE = """
         <div class="footer-top-container">
             <img src="/logo.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto 15px auto;">
         </div>
-        <div class="footer-links-grid">
+                <div class="footer-links-grid">
             <a href="/impresszum" class="footer-link">I Impresszum</a>
             <a href="/aszf" class="footer-link">I ÁSZF</a>
             <a href="/adatvedelem" class="footer-link">I Adatvédelem</a>
-            <a href="/hirdetes" class="footer-link">I Médiaajánlat</a>
-            <a href="/hirdetes" class="footer-link">I Kapcsolat</a>
+            <a href="/mediaajanlat" class="footer-link">I Médiaajánlat</a>
+            <a href="/kapcsolat" class="footer-link">I Kapcsolat</a>
         </div>
+
     </footer>
     <div class="footer-bottom-dark-bar">
         <div class="footer-bottom-container">
