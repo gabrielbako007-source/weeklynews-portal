@@ -11,10 +11,7 @@ from flask import send_from_directory
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "twn_magazin_admin_super_secret_session_key_2026")
 
-CONFIG_FILE = "twn_config.json"
-ADMIN_PASSWORD = "twnadmin2026"
-
-# UPLOAD MA mappa a képeknek és fájloknak
+# UPLOAD mappa a képeknek és fájloknak
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
@@ -30,7 +27,7 @@ SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
 SMTP_USER = os.environ.get("SMTP_USER", "infotwn@etik.com")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "app_password_placeholder")
 
-# A PONTOS, MA ESTE ÉLESÍTETT ÖSSZEVONT ROVATSTRUKTÚRA
+# A PONTOS, ÖSSZEVONT ROVATSTRUKTÚRA MAPPING
 ROVATOK_MAP = {
     "news": "NEWS",
     "hit_csalad_erkolcs": "HIT, CSALÁD & ERKÖLCS",
@@ -48,7 +45,7 @@ DEFAULT_CONFIG = {
             "category": "hit_csalad_erkolcs",
             "author": "Főszerkesztő",
             "read_time": "1 perc",
-            "content": "Ez az első minta cikked. A Canva-motorral vizuálisan szerkesztheted, képeket tölthetsz fel, és rovatokba rendezheted a tartalmat.",
+            "content": "Ez az első minta cikked. A Canva-motororral vizuálisan szerkesztheted, képeket tölthetsz fel, és rovatokba rendezheted a tartalmat.",
             "youtube": "",
             "mp3": "",
             "image": "",
@@ -64,9 +61,14 @@ DEFAULT_CONFIG = {
             "stripe_subscription_id": "sub_test123",
             "last_payment": "2026-11-03"
         }
+    },
+    "cover_links": {
+        "kulfold_politika": "/magazin/olvaso",
+        "venia_sokk": "/magazin/olvaso",
+        "vallas_hit": "/magazin/olvaso",
+        "tudomany_tech": "/magazin/olvaso"
     }
 }
-
 def load_config():
     if not os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -74,11 +76,26 @@ def load_config():
         return DEFAULT_CONFIG
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            config = json.load(f)
+            if "cover_links" not in config:
+                config["cover_links"] = DEFAULT_CONFIG["cover_links"]
+            return config
     except:
         return DEFAULT_CONFIG
 
 def save_config(config):
+    if "cover_links" not in config:
+        config["cover_links"] = {
+            "kulfold_politika": "/magazin/olvaso",
+            "venia_sokk": "/magazin/olvaso",
+            "vallas_hit": "/magazin/olvaso",
+            "tudomany_tech": "/magazin/olvaso"
+        }
+    else:
+        config["cover_links"]["kulfold_politika"] = "/magazin/olvaso"
+        config["cover_links"]["venia_sokk"] = "/magazin/olvaso"
+        config["cover_links"]["vallas_hit"] = "/magazin/olvaso"
+        config["cover_links"]["tudomany_tech"] = "/magazin/olvaso"
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=4)
 
@@ -98,6 +115,7 @@ def kuldo_infomaniak_email(hova, targy, szoveg):
 
 DRAFT_ARTICLES = None
 DRAFT_ADS = None
+
 ADMIN_PANEL_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
@@ -151,7 +169,6 @@ ADMIN_PANEL_TEMPLATE = """
             <button class="tab-btn" onclick="openTab('tab_hirdetesek')">Hirdetések (Ajánló)</button>
             <button class="tab-btn" onclick="openTab('tab_elofizetok')">Előfizetők Követése (Stripe)</button>
         </div>
-        
         <div id="tab_lista" class="tab-content active">
             <div style="background: #1e293b; padding: 20px; border: 1px dashed #38bdf8; border-radius: 6px; margin-bottom: 25px;">
                 <h4 style="color:#38bdf8; margin-top:0; margin-bottom:10px;">Fájl feltöltése a saját számítógépedről</h4>
