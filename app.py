@@ -8,7 +8,7 @@ from flask import Flask, render_template_string, redirect, url_for, send_from_di
 from admin_rendszer import admin_bp
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "twn_super_secret_key_for_session_2026")
+app.secret_key = "twn_super_secret_key_for_session"
 
 # A 2. RENDSZER BLUEPRINT REGISZTRÁCIÓJA
 app.register_blueprint(admin_bp)
@@ -16,31 +16,8 @@ app.register_blueprint(admin_bp)
 CONFIG_FILE = "twn_config.json"
 ADMIN_PASSWORD = "twnadmin2026"
 
+# AZ EREDETI CONFIG STRUKTÚRA TELJES VISSZAÁLLÍTÁSA
 DEFAULT_CONFIG = {
-    "magazin_cikkek": [
-        {
-            "id": 1,
-            "title": "Üdvözöljük a The Weekly TWN News Prémium Rendszerében!",
-            "category": "hit_csalad_erkolcs",
-            "author": "Főszerkesztő",
-            "read_time": "1 perc",
-            "content": "Ez az első minta cikked. A Canva-motorral vizuálisan szerkesztheted, képeket tölthetsz fel, és rovatokba rendezheted a tartalmat.",
-            "youtube": "",
-            "mp3": "",
-            "image": "",
-            "published": True
-        }
-    ],
-    "magazin_ads": [],
-    "felhasznalok": {
-        "teszt_olvaso@twn.hu": {
-            "password_hash": "dummy_hash",
-            "status": "active",
-            "stripe_customer_id": "cus_test123",
-            "stripe_subscription_id": "sub_test123",
-            "last_payment": "2026-11-04"
-        }
-    },
     "cover_links": {
         "kulfold_politika": "https://twnnews.hu",
         "venia_sokk": "https://twnnews.hu",
@@ -61,12 +38,7 @@ def load_config():
         return DEFAULT_CONFIG
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            config = json.load(f)
-            if "cover_links" not in config:
-                config["cover_links"] = DEFAULT_CONFIG["cover_links"]
-            if "ads" not in config:
-                config["ads"] = DEFAULT_CONFIG["ads"]
-            return config
+            return json.load(f)
     except:
         return DEFAULT_CONFIG
 
@@ -163,6 +135,7 @@ HTML_TEMPLATE = """
             color: #ffffff;
             overflow-x: hidden;
         }
+        
         .frozen-top-header {
             position: sticky;
             top: 0;
@@ -182,86 +155,224 @@ HTML_TEMPLATE = """
             align-items: center;
             width: 100%;
         }
-        .nav-bar { background-color: #0f172a; padding: 0px 1rem; display: flex; justify-content: center; border-bottom: 1px solid #475569; flex-wrap: wrap; }
-        .nav-item { color: white; font-family: sans-serif; font-weight: bold; padding: 1.1rem 1.5rem; text-decoration: none; font-size: 1.05rem; }
-        .nav-item-marketing { color: #38bdf8; border-left: 1px solid #475569; }
-        .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
-        .three-column-grid-container {
-            display: grid;
-            grid-template-columns: 320px 1fr 320px;
-            gap: 2rem;
-            max-width: 1700px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        @media (max-width: 1300px) {
-            .three-column-grid-container { grid-template-columns: 1fr; }
-        }
-        .side-column-stream { display: flex; flex-direction: column; gap: 25px; }
-        .center-news-stream { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start;
-            width: 100%;
-            text-align: center;
-        }
-        .main-magazine-cover { 
-            display: block;
-            width: 100%; 
-            max-width: 480px; 
-            margin: 0 auto 3rem auto; 
-            border: 2px solid #fff; 
-            box-shadow: 0 6px 20px rgba(0,0,0,0.5); 
+        
+        .logo-box-html {
+            background-color: transparent;
+            padding: 6px 0;
+            border-top: 1px solid #e2e8f0;    
+            border-bottom: 1px solid #e2e8f0; 
+            display: inline-flex;
+            align-items: stretch;
+            font-family: 'Bodoni Moda', serif;
             position: relative;
         }
-        .main-magazine-cover img { 
-            display: block;
-            margin: 0 auto;
-            width: 100%; 
-            height: auto; 
+        .logo-text-the {
+            font-size: 78px;
+            font-weight: 400;
+            color: #e2e8f0;
+            line-height: 0.85;
+            letter-spacing: -3px;
+            padding-right: 14px;
+            display: flex;
+            align-items: center;
         }
-        .cover-hotspot { position: absolute; background: rgba(255,255,255,0); transition: background 0.2s ease; cursor: pointer; }
-        .cover-hotspot:hover { background: rgba(255,255,255,0.15); }
-        .hs-kulfold { top: 0%; left: 0%; width: 100%; height: 25%; }
-        .hs-venia { top: 25%; left: 0%; width: 100%; height: 25%; }
-        .hs-vallas { top: 50%; left: 0%; width: 100%; height: 25%; }
-        .hs-tech { top: 75%; left: 0%; width: 100%; height: 25%; }
-        .rovat-section { margin-bottom: 3.5rem; width: 100%; }
-        .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .logo-right-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 215px;
+            padding-left: 2px;
+        }
+        .logo-text-weekly {
+            font-family: 'Bodoni Moda', serif;
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: transparent;
+            -webkit-text-stroke: 1px #e2e8f0;
+            line-height: 0.95;
+            text-transform: uppercase;
+            width: 100%;
+        }
+        .logo-bottom-row-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: auto;
+        }
+        .logo-twn-badge {
+            background-color: #2ea6f2;
+            padding: 1px 7px;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-family: 'Bodoni Moda', serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 24px;
+            line-height: 1;
+        }
+        .logo-twn-badge span:nth-child(1) { color: #111827; }
+        .logo-twn-badge span:nth-child(2) { color: #ffffff; }
+        .logo-twn-badge span:nth-child(3) { color: #e62129; }
+        
+        .logo-text-news {
+            font-family: 'Oswald', sans-serif;
+            font-size: 38px;
+            font-weight: 700;
+            color: #e62129;
+            line-height: 0.9;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
         .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; }
         .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .ujsag-logo-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; }
+      
         .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
         .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
         .cikk-link:hover { color: #2ea6f2; text-decoration: underline; }
+        
         .twn-mini-ad { background-color: #1a202c; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; width: 100%; box-sizing: border-box; text-align: center; margin: 10px 0; overflow: hidden; }
         .ad-label { font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
         .ad-text { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; text-decoration: none; }
         .ad-img { width: 100%; height: auto; border-radius: 4px; display: block; }
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 4px; }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        footer { background-color: #737373; padding: 30px 20px; margin-top: 5rem; border-top: 4px solid #ff2a2a; }
-        .footer-top-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 30px; }
-        .footer-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 30px; }
-        .footer-link { color: #ffffff; text-decoration: none; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        .footer-bottom-dark-bar { background-color: #171717; padding: 25px 20px; font-size: 0.8rem; color: #a3a3a3; line-height: 1.6; }
+        footer {
+            background-color: #737373; 
+            padding: 30px 20px;
+            margin-top: 5rem;
+            border-top: 4px solid #ff2a2a;
+        }
+        .footer-top-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        .footer-logo-area {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .footer-logo-text {
+            color: #1e293b;
+            font-family: 'Bodoni Moda', serif;
+            font-size: 2.2rem;
+            font-weight: bold;
+        }
+        .footer-links-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px 30px;
+        }
+        .footer-link {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .footer-bottom-dark-bar {
+            background-color: #171717; 
+            padding: 25px 20px;
+            font-size: 0.8rem;
+            color: #a3a3a3;
+            line-height: 1.6;
+        }
         .footer-bottom-container { max-width: 1400px; margin: 0 auto; }
-        @media (max-width: 768px) {
-            .frozen-top-header { position: sticky !important; top: 0 !important; z-index: 1000 !important; width: 100% !important; display: block !important; }
-            .three-column-grid-container { margin-top: 10px !important; padding-top: 0 !important; }
-            .nav-bar { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; overflow-x: auto !important; white-space: nowrap !important; width: 100% !important; padding: 2px 5px !important; box-sizing: border-box !important; -webkit-overflow-scrolling: touch; }
-            .nav-bar a.nav-item, .nav-bar a.btn-refresh { display: inline-block !important; flex-shrink: 0 !important; margin-right: 15px !important; float: none !important; }
-            .nav-bar a.nav-item-marketing, [href*="hirdetes"] { display: block !important; width: 90% !important; margin: 15px auto 5px auto !important; text-align: center !important; clear: both !important; float: none !important; }
-            .footer-bottom-dark-bar, footer, .footer { display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 10px !important; padding: 20px !important; width: 100% !important; box-sizing: border-box !important; }
-            .footer-bottom-dark-bar div, footer div, .footer div { display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 10px !important; width: 100% !important; }
-            .footer-bottom-dark-bar a, footer a, .footer a { display: inline-block !important; font-size: 13px !important; white-space: nowrap !important; margin: 0 !important; padding: 0 !important; }
-            .footer-bottom-dark-bar p, footer p, .footer-bottom-dark-bar span, .footer p { display: block !important; width: 100% !important; white-space: nowrap !important; font-size: 12px !important; text-align: center !important; margin-top: 10px !important; }
-        }
-        @media (min-width: 769px) {
-            .footer-bottom-dark-bar div, footer div, .footer div, .footer-links-grid { display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 25px !important; width: 100% !important; }
-            .footer-bottom-dark-bar a, footer a, .footer a { display: inline-block !important; white-space: nowrap !important; }
-        }
+@media (max-width: 768px) {
+    .frozen-top-header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1000 !important;
+        width: 100% !important;
+        display: block !important;
+    }
+    .three-column-grid-container {
+        margin-top: 10px !important;
+        padding-top: 0 !important;
+    }
+    .nav-bar {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        width: 100% !important;
+        padding: 2px 5px !important;
+        box-sizing: border-box !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .nav-bar a.nav-item, .nav-bar a.btn-refresh {
+        display: inline-block !important;
+        flex-shrink: 0 !important;
+        margin-right: 15px !important;
+        float: none !important;
+    }
+    .nav-bar a.nav-item-marketing, [href*="hirdetes"] {
+        display: block !important;
+        width: 90% !important;
+        margin: 15px auto 5px auto !important;
+        text-align: center !important;
+        clear: both !important;
+        float: none !important;
+    }
+    .footer-bottom-dark-bar, footer, .footer {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 10px !important;
+        padding: 20px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .footer-bottom-dark-bar div, footer div, .footer div {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+    .footer-bottom-dark-bar a, footer a, .footer a {
+        display: inline-block !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .footer-bottom-dark-bar p, footer p, .footer-bottom-dark-bar span, .footer p {
+        display: block !important;
+        width: 100% !important;
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        text-align: center !important;
+        margin-top: 10px !important;
+    }
+}
+@media (min-width: 769px) {
+    .footer-bottom-dark-bar div, footer div, .footer div, .footer-links-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 25px !important;
+        width: 100% !important;
+    }
+    .footer-bottom-dark-bar a, footer a, .footer a {
+        display: inline-block !important;
+        white-space: nowrap !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -271,6 +382,7 @@ HTML_TEMPLATE = """
                 <img src="/twn_logo.png" style="max-width: 480px; width: 100%; height: auto; display: block; margin: 0 auto; padding: 0; mix-blend-mode: screen;">
             </div>
         </header>
+        
         <div class="nav-bar">
             <a href="/frissites" class="btn-refresh">🔄 Frissítés</a>
             <a href="#belfold" class="nav-item">Belföld</a>
@@ -278,7 +390,7 @@ HTML_TEMPLATE = """
             <a href="#gazdasag" class="nav-item">Gazdaság</a>
             <a href="#vallas" class="nav-item">Vallás</a>
             <a href="#tech" class="nav-item">Család & Tech</a>
-            <a href="/hirdetes" class="nav-item nav-item-marketing">💼 Médiaajánlat</a>
+            <a href="/hirdetes" class="nav-item nav-item-marketing">💼 Hirdetés feladás</a>
         </div>
     </div>
     <div class="three-column-grid-container">
@@ -295,6 +407,7 @@ HTML_TEMPLATE = """
                             </div>
                         {% endfor %}
                     </div>
+                    
                     <div class="twn-mini-ad">
                         <span class="ad-label">Hirdetés / Premium Ad</span>
                         {% if cfg.ads.vallas_ad.type == 'youtube' %}
@@ -321,6 +434,7 @@ HTML_TEMPLATE = """
                                 </div>
                             {% endfor %}
                         </div>
+                        
                         <div class="twn-mini-ad">
                             <span class="ad-label">Hirdetés / Premium Ad</span>
                             {% if cfg.ads.gazdasag_ad.type == 'youtube' %}
@@ -341,11 +455,10 @@ HTML_TEMPLATE = """
         <div class="center-news-stream">
             <div class="main-magazine-cover">
                 <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
-                <!-- A PONTOS KAPUÖSSZEKÖTÉS: BÁRHOL ÉRINTI AZ OLVASÓ A MAGAZINT, ÁTVISZI A 2. RENDSZERBE -->
-                <a href="{{ cfg.cover_links.kulfold_politika }}" class="cover-hotspot hs-kulfold" title="Prémium Magazin"></a>
-                <a href="{{ cfg.cover_links.venia_sokk }}" class="cover-hotspot hs-venia" title="Prémium Magazin"></a>
-                <a href="{{ cfg.cover_links.vallas_hit }}" class="cover-hotspot hs-vallas" title="Prémium Magazin"></a>
-                <a href="{{ cfg.cover_links.tudomany_tech }}" class="cover-hotspot hs-tech" title="Prémium Magazin"></a>
+                <a href="{{ cfg.cover_links.kulfold_politika }}" target="_blank" class="cover-hotspot hs-kulfold" title="Külföld & Politika"></a>
+                <a href="{{ cfg.cover_links.venia_sokk }}" target="_blank" class="cover-hotspot hs-venia" title="Venia-Sokk"></a>
+                <a href="{{ cfg.cover_links.vallas_hit }}" target="_blank" class="cover-hotspot hs-vallas" title="Vallás, Hit & Erkölcs"></a>
+                <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
             </div>
             <div class="rovat-section" id="belfold">
                 <div class="rovat-title">Belföld hírei</div>
@@ -392,6 +505,7 @@ HTML_TEMPLATE = """
                                 </div>
                             {% endfor %}
                         </div>
+                        
                         {% if loop.index % 2 == 0 %}
                             <div class="twn-mini-ad">
                                 <span class="ad-label">Hirdetés / Premium Ad</span>
@@ -410,7 +524,7 @@ HTML_TEMPLATE = """
                 </div>
             </div>
         </div>
-    </div>
+    </div> <!-- GRID LEZÁRÁSA -->
     <footer>
         <div class="footer-top-container">
             <div class="footer-links-grid">
@@ -422,6 +536,7 @@ HTML_TEMPLATE = """
             </div>
         </div>
     </footer>
+    
     <div class="footer-bottom-dark-bar">
         <div class="footer-bottom-container">
             <p>&copy; 2026 THE WEEKLY TWN NEWS. Minden jog fenntartva.</p>
@@ -528,7 +643,7 @@ def refresh():
 def serve_top_logo():
     return send_from_directory(os.getcwd(), "twn_logo.png")
 
-# A FIXEN LEGALULRA HELYEZETT KÖZÖS INDÍTÓBLOKK
+# A FIXEN LEGALULRA HELYEZETT KÖZÖS SZERVER INDÍTÓBLOKK
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=True)
