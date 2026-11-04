@@ -380,27 +380,33 @@ HTML_TEMPLATE = """
         </div>
     </div> <!-- FAJALIS GRID LEZÁRÁS -->
 
-        <footer>
-        <div class="footer-top-container">
-            <img src="/logo.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto 15px auto;">
+         <footer style="background-color: #737373; padding: 40px 20px; margin-top: 5rem; border-top: 4px solid #ff2a2a; text-align: center;">
+        <div class="footer-top-container" style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: center; align-items: center; padding-bottom: 20px;">
+            <img src="/logo.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto;">
         </div>
-                <div class="footer-links-grid">
-            <a href="/impresszum" class="footer-link">I Impresszum</a>
-            <a href="/aszf" class="footer-link">I ÁSZF</a>
-            <a href="/adatvedelem" class="footer-link">I Adatvédelem</a>
-            <a href="/mediaajanlat" class="footer-link">I Médiaajánlat</a>
-            <a href="/kapcsolat" class="footer-link">I Kapcsolat</a>
+        <div class="footer-links-grid" style="display: flex; justify-content: center; gap: 15px 30px; width: 100%; flex-wrap: wrap; max-width: 1200px; margin: 0 auto 30px auto;">
+            <a href="/impresszum" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I Impresszum</a>
+            <a href="/kapcsolat" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I Kapcsolat</a>
+            <a href="/mediaajanlat" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I Médiaajánlat</a>
+            <a href="/adatvedelem" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I Adatvédelem</a>
+            <a href="/kommenteles-szabalyzat" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I Szabályzat a kommentelésről</a>
+            <a href="/alapitvany" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I Alapítvány</a>
+            <a href="/partnereink" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I Partnereink</a>
+            <a href="/aszf" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I ÁSZF</a>
+            <a href="/politikai-hirdetesek" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I Politikai hirdetések</a>
+            <a href="/webshop-tajekoztato" class="footer-link" style="color: #ffffff; text-decoration: none; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">I Webshop tájékoztató</a>
         </div>
-
     </footer>
-    <div class="footer-bottom-dark-bar">
-        <div class="footer-bottom-container">
-            <p>&copy; 2026 THE WEEKLY TWN NEWS. Minden jog fenntartva.</p>
+    <div class="footer-bottom-dark-bar" style="background-color: #171717; padding: 25px 20px; font-size: 0.85rem; color: #a3a3a3; line-height: 1.6; text-align: center;">
+        <div class="footer-bottom-container" style="max-width: 1400px; margin: 0 auto;">
+            <p style="margin: 0 auto; max-width: 1000px; color: #cbd5e1;">
+                Az ezen a weboldalon megjelent szövegek, grafikák, képek, hangfelvételek, videóanyagok vagy egyéb tartalmak szerzői jogvédelem alatt állnak. A Hetek.hu Kft. minden jogot fenntart a tartalommal kapcsolatosan, beleértve a tartalom szöveg- és adatbányászat céljára való felhasználását is – A szerzői jogról szóló 1999. évi LXXVI. törvény rendelkezései értelmében a törvény 35/A. § (1) paragrafusa és a digitális szolgáltatások piacairól szóló európai irányelv (Az Európai Parlament és a Tanács (EU) 2019/790 irányelve) 4. cikke alapján. © 2026 HETEK.HU Kft.
+            </p>
         </div>
     </div>
 </body>
 </html>
-"""
+
 
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
@@ -443,18 +449,53 @@ def index():
 
 @app.route("/impresszum")
 def impresszum():
-    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p><h3>Felelősségi nyilatkozat:</h3><p>A TWN News felületén megjelenő hírek jelentős része egy automatizált systemen keresztül, külső sajtóorgánumok nyilvánosan elérhető RSS csatornáiból származik.</p>"
+    szoveg = "<h3>Kiadói adatok</h3><p><strong>Kiadó:</strong> HETEK.HU Kft.<br><strong>Székhely:</strong> 1107 Budapest, Mázsa u. 9.<br><strong>Felelős kiadó:</strong> Németh Sándor</p><h3>Szerkesztőség</h3><p><strong>Főszerkesztő:</strong> Gavra Gábor<br><strong>Főszerkesztő-helyettes:</strong> Sebestyén István</p><h3>Elérhetőségek</h3><p>E-mail: szerkesztoseg@hetek.hu<br>Telefon: +36 1 432 2700</p>"
     return render_template_string(JOGI_TEMPLATE, cim="Impresszum", tartalom=szoveg)
 
-@app.route("/aszf")
-def aszf():
-    szoveg = "<h3>1. Általános feltételek</h3><p>A twnnews.hu használatával minden látogató automatikusan elfogadja a jelen Általános Szerződési Feltételeket.</p><h3>2. Hirdetések</h3><p>A hasábok között megjelenő egyedi reklámhelyeket a Hirdetők az Adminisztrációs felületen kezelhetik.</p>"
-    return render_template_string(JOGI_TEMPLATE, cim="Általános Szerződési Feltételek (ÁSZF)", tartalom=szoveg)
+@app.route("/kapcsolat")
+def kapcsolat():
+    szoveg = "<h3>Központi Elérhetőségek</h3><p><strong>Szerkesztőség és Kiadó hivatala:</strong><br>1107 Budapest, Mázsa utca 9.<br>E-mail: <strong>info@hetek.hu</strong></p><h3>Előfizetés és Terjesztés</h3><p>Ha előfizetéssel, szállítással vagy digitális hozzáféréssel kapcsolatban van kérdése:<br>E-mail: elofizetes@hetek.hu<br>Telefon: +36 1 432 2706</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Kapcsolat", tartalom=szoveg)
+
+@app.route("/mediaajanlat")
+def mediaajanlat():
+    szoveg = "<h3>Hirdetési felületek és tarifák</h3><p>A Hetek országos közéleti hetilap nyomtatott számaiban és a hetek.hu online felületén egyaránt biztosítunk hirdetési helyeket.</p><p><strong>Hirdetési típusok:</strong> Banner reklámok, PR cikkek elhelyezése, nyomtatott oldalas hirdetések.<br><strong>Médiaajánlat kérhető:</strong> marketing@hetek.hu</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Médiaajánlat", tartalom=szoveg)
 
 @app.route("/adatvedelem")
 def adatvedelem():
-    szoveg = "<h3>1. Adatkezelés</h3><p>A TWN News kizárólag üzleti kapcsolattartás céljából kezel személyes adatokat (nevet és e-mail címet).</p>"
-    return render_template_string(JOGI_TEMPLATE, cim="Adatvédelmi Tájékoztató (GDPR)", tartalom=szoveg)
+    szoveg = "<h3>Adatkezelési Tájékoztató</h3><p>A HETEK.HU Kft. kiemelten ügyel a személyes adatok védelmére. A weboldal használata során gyűjtött adatokat (például hírlevél-feliratkozás vagy előfizetés esetén) a GDPR és a hazai jogszabályok legszigorúbb betartásával kezeljük. Harmadik félnek adatot nem adunk át.</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Adatvédelmi Tájékoztató", tartalom=szoveg)
+
+@app.route("/kommenteles-szabalyzat")
+def kommenteles_szabalyzat():
+    szoveg = "<h3>Moderálási Alapelvek</h3><p>A Hetek felületein a kulturált, egymást tisztelő véleménycserét támogatjuk. Azonnali törlést és kitiltást vonnak maguk után az alábbiak:</p><ul><li>Gyűlöletbeszéd, rasszista vagy megkülönböztető tartalom.</li><li>Személyeskedés, obszcén kifejezések használata.</li><li>Kereskedelmi jellegű spamek és reklámok.</li></ul>"
+    return render_template_string(JOGI_TEMPLATE, cim="Szabályzat a kommentelésről", tartalom=szoveg)
+
+@app.route("/alapitvany")
+def alapitvany():
+    szoveg = "<h3>A Hetekért Alapítvány</h3><p>Alapítványunk célja a független, értékteremtő keresztény és közéleti újságírás támogatása, valamint a tehetséges fiatal újságírók szakmai fejlődésének segítése.</p><p><strong>Adószámunk az 1%-os felajánláshoz:</strong> 18134762-1-42<br>Köszönjük, hogy támogatja a minőségi sajtót!</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="A Hetekért Alapítvány", tartalom=szoveg)
+
+@app.route("/partnereink")
+def partnereink():
+    szoveg = "<h3>Stratégiai és Terjesztési Partnereink</h3><p>A Hetek magazin kiemelt szakmai és logisztikai partnerei:</p><ul><li>Magyar Posta Zrt. (Országos lapterjesztés)</li><li>Lapker Zrt. (Újságárusok, Relay, Inmedio)</li><li>Hit Gyülekezete (Alapító és támogató közösség)</li></ul>"
+    return render_template_string(JOGI_TEMPLATE, cim="Partnereink", tartalom=szoveg)
+
+@app.route("/aszf")
+def aszf():
+    szoveg = "<h3>Általános Szerződési Feltételek</h3><p>Jelen ÁSZF szabályozza a hetek.hu weboldalon elérhető szolgáltatások, valamint a nyomtatott és digitális előfizetések vásárlási feltételeit. A megrendelés elküldésével a vásárló kifejezetten elfogadja a szerződéses feltételeket és a fizetési kötelezettséget.</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Általános Szerződési Feltételek (ÁSZF)", tartalom=szoveg)
+
+@app.route("/politikai-hirdetesek")
+def politikai_hirdetesek():
+    szoveg = "<h3>Politikai hirdetések közzététele</h3><p>A választási eljárásról szóló törvény értelmében a Hetek Országos Közéleti Hetilap és a hetek.hu az Állami Számvevőszék által jóváhagyott hivatalos árjegyzék alapján közöl politikai hirdetéseket a kampányidőszakokban.</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Politikai hirdetések", tartalom=szoveg)
+
+@app.route("/webshop-tajekoztato")
+def webshop_tajekoztato():
+    szoveg = "<h3>Webáruház és Előfizetői Tájékoztató</h3><p>A Hetek webshopjában bankkártyás fizetéssel vagy banki átutalással lehet előfizetéseket és könyveket vásárolni.</p><p><strong>Szállítási határidő:</strong> A nyomtatott hetilap minden pénteken érkezik a postaládákba.<br><strong>Elállási jog:</strong> A vásárlástól számított 14 napon belül jogszabály szerint biztosított.</p>"
+    return render_template_string(JOGI_TEMPLATE, cim="Webshop tájékoztató", tartalom=szoveg)
 
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
@@ -465,19 +506,7 @@ def admin():
                 return redirect(url_for("admin"))
             return '<h3>Hibás jelszó! <a href="/admin">Újra</a></h3>'
         return '<body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;"><form method="POST" style="background:#1e293b; display:inline-block; padding:30px; border-radius:8px; border:1px solid #475569;"><label style="display:block; margin-bottom:10px;">Admin Jelszó:</label><input type="password" name="password" style="padding:8px; background:#0f172a; color:#fff; border:1px solid #475569;"><br><br><button type="submit" style="background:#ff2a2a; color:#fff; border:0; padding:8px 15px; border-radius:4px; cursor:pointer;">Belépés</button></form></body>'
-    
-    current_config = load_config()
-    if request.method == "POST":
-        current_config["cover_links"]["kulfold_politika"] = request.form.get("cover_kulfold")
-        current_config["cover_links"]["venia_sokk"] = request.form.get("cover_venia")
-        current_config["cover_links"]["vallas_hit"] = request.form.get("cover_vallas")
-        current_config["cover_links"]["tudomany_tech"] = request.form.get("cover_tech")
-        current_config["ads"]["vallas_ad"]["type"] = request.form.get("vallas_ad_type")
-        current_config["ads"]["vallas_ad"]["content"] = request.form.get("vallas_ad_content")
-        current_config["ads"]["vallas_ad"]["url"] = request.form.get("vallas_ad_url")
-        save_config(current_config)
-        return redirect(url_for("index"))
-    return render_template_string(ADMIN_TEMPLATE, cfg=current_config)
+    return redirect(url_for("index"))
 
 @app.route("/admin/logout")
 def logout():
@@ -503,22 +532,11 @@ def serve_top_logo():
     import os
     return send_from_directory(os.getcwd(), "twn_logo.png")
 
-@app.route("/mediaajanlat")
-def mediaajanlat():
-    szoveg = "<h3>TWN News Médiaajánlat & Hirdetési Felületek</h3><p>Szeretné termékét, szolgáltatását vagy hirdetését elhelyezni a felületünkön?</p><p><strong>Elérhető felületeink:</strong> Kiemelt képes bannerek, beágyazott hirdetések a hasábok között, és egyedi PR cikkek.</p><p><strong>Kapcsolatfelvétel és ajánlatkérés:</strong> info@twnnews.hu</p>"
-    return render_template_string(JOGI_TEMPLATE, cim="Médiaajánlat", tartalom=szoveg)
-
-@app.route("/kapcsolat")
-def kapcsolat():
-    szoveg = "<h3>Szerkesztőség és Kiadó</h3><p><strong>Kiadja:</strong> [A Te Cégfelelősöd / Kiadód neve]<br><strong>Alapító-főszerkesztő:</strong> [A Te Neved]</p><p><strong>Szerkesztőség elérhetősége:</strong><br>E-mail: <strong>info@twnnews.hu</strong><br>Telefon: [A Te Telefonszámod]</p><p><strong>Ügyfélszolgálat és terjesztés:</strong><br>Bármilyen észrevétel, előfizetői vagy terjesztési kérdés esetén forduljon hozzánk bizalommal a fenti e-mail címen. Visszajelzési időnk 24 órán belül garantált.</p>"
-    return render_template_string(JOGI_TEMPLATE, cim="Kapcsolat", tartalom=szoveg)
-
 @app.route("/logo.png.png")
 def serve_footer_logo():
     import os
     return send_from_directory(os.getcwd(), "logo.png.png")
 
-# TŰPONTOS BLUEPRINT REGISZTRÁCIÓ ANGOLUL
 from admin_rendszer import admin_bp
 app.register_blueprint(admin_bp)
 
