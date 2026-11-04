@@ -4,28 +4,14 @@ import secrets
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
-from flask import Flask, render_template_string, redirect, url_for, request, session, Response
-from werkzeug.utils import secure_filename
-from flask import send_from_directory
+from flask import Blueprint, render_template_string, redirect, url_for, request, session, Response, send_from_directory
 
-app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "twn_magazin_admin_super_secret_session_key_2026")
+# Blueprint modul konfigurálása az 1. rendszer általi közös indításhoz
+admin_bp = Blueprint('admin_bp', __name__, url_prefix='/magazin')
 
-# UPLOAD mappa a képeknek és fájloknak
+CONFIG_FILE = "twn_config.json"
+ADMIN_PASSWORD = "twnadmin2026"
 UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
-# STRIPE INTEGRÁCIÓS BEÁLLÍTÁSOK
-STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_placeholder")
-STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "whsec_placeholder")
-
-# INFOMANIAK SMTP E-MAIL INTEGRÁCIÓ
-SMTP_SERVER = os.environ.get("SMTP_SERVER", "://infomaniak.com")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
-SMTP_USER = os.environ.get("SMTP_USER", "infotwn@etik.com")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "app_password_placeholder")
 
 # A PONTOS, ÖSSZEVONT ROVATSTRUKTÚRA MAPPING
 ROVATOK_MAP = {
@@ -45,7 +31,7 @@ DEFAULT_CONFIG = {
             "category": "hit_csalad_erkolcs",
             "author": "Főszerkesztő",
             "read_time": "1 perc",
-            "content": "Ez az első minta cikked. A Canva-motororral vizuálisan szerkesztheted, képeket tölthetsz fel, és rovatokba rendezheted a tartalmat.",
+            "content": "Ez az első minta cikked. A Canva-motorral vizuálisan szerkesztheted, képeket tölthetsz fel, és rovatokba rendezheted a tartalmat.",
             "youtube": "",
             "mp3": "",
             "image": "",
@@ -59,16 +45,11 @@ DEFAULT_CONFIG = {
             "status": "active",
             "stripe_customer_id": "cus_test123",
             "stripe_subscription_id": "sub_test123",
-            "last_payment": "2026-11-03"
+            "last_payment": "2026-11-04"
         }
-    },
-    "cover_links": {
-        "kulfold_politika": "/magazin/olvaso",
-        "venia_sokk": "/magazin/olvaso",
-        "vallas_hit": "/magazin/olvaso",
-        "tudomany_tech": "/magazin/olvaso"
     }
 }
+
 def load_config():
     if not os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -76,26 +57,11 @@ def load_config():
         return DEFAULT_CONFIG
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            config = json.load(f)
-            if "cover_links" not in config:
-                config["cover_links"] = DEFAULT_CONFIG["cover_links"]
-            return config
+            return json.load(f)
     except:
         return DEFAULT_CONFIG
 
 def save_config(config):
-    if "cover_links" not in config:
-        config["cover_links"] = {
-            "kulfold_politika": "/magazin/olvaso",
-            "venia_sokk": "/magazin/olvaso",
-            "vallas_hit": "/magazin/olvaso",
-            "tudomany_tech": "/magazin/olvaso"
-        }
-    else:
-        config["cover_links"]["kulfold_politika"] = "/magazin/olvaso"
-        config["cover_links"]["venia_sokk"] = "/magazin/olvaso"
-        config["cover_links"]["vallas_hit"] = "/magazin/olvaso"
-        config["cover_links"]["tudomany_tech"] = "/magazin/olvaso"
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=4)
 
@@ -103,19 +69,18 @@ def kuldo_infomaniak_email(hova, targy, szoveg):
     try:
         msg = MIMEText(szoveg, "plain", "utf-8")
         msg["Subject"] = targy
-        msg["From"] = SMTP_USER
+        msg["From"] = os.environ.get("SMTP_USER", "infotwn@etik.com")
         msg["To"] = hova
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        with smtplib.SMTP(os.environ.get("SMTP_SERVER", "://infomaniak.com"), int(os.environ.get("SMTP_PORT", 587))) as server:
             server.starttls()
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.sendmail(SMTP_USER, [hova], msg.as_string())
+            server.login(os.environ.get("SMTP_USER", "infotwn@etik.com"), os.environ.get("SMTP_PASSWORD", "app_password_placeholder"))
+            server.sendmail(os.environ.get("SMTP_USER", "infotwn@etik.com"), [hova], msg.as_string())
         return True
     except:
         return False
 
 DRAFT_ARTICLES = None
 DRAFT_ADS = None
-
 ADMIN_PANEL_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
@@ -159,8 +124,8 @@ ADMIN_PANEL_TEMPLATE = """
         <div style="background:#0f172a; padding:20px 30px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #475569;">
             <h2 style="margin:0; color:#ff2a2a; letter-spacing:1px;">WEEKLY NEWS ADMIN KÖZPONT</h2>
             <div>
-                <a href="/panel/elesites" class="btn-action" style="background:#ef4444; font-size:0.95rem; padding:8px 18px; border:1px solid #f87171;">[Élesítés] VÁLTOZTATÁSOK ÉLESÍTÉSE</a>
-                <a href="/logout" style="color:#a1a1aa; margin-left:15px; font-size:0.9rem; text-decoration:none; font-weight:bold;">Kijelentkezés [X]</a>
+                <a href="/magazin/panel/elesites" class="btn-action" style="background:#ef4444; font-size:0.95rem; padding:8px 18px; border:1px solid #f87171;">[Élesítés] VÁLTOZTATÁSOK ÉLESÍTÉSE</a>
+                <a href="/magazin/logout" style="color:#a1a1aa; margin-left:15px; font-size:0.9rem; text-decoration:none; font-weight:bold;">Kijelentkezés [X]</a>
             </div>
         </div>
         <div class="tabs-header">
@@ -188,14 +153,14 @@ ADMIN_PANEL_TEMPLATE = """
                         <td>{{ rovatok_nevei[cikk.category] }}</td>
                         <td>{{ cikk.author }}</td>
                         <td>{% if cikk.published %}<span style="color:#4ade80;">[●] Élesítve</span>{% else %}<span style="color:#fbbf24;">[○] Vázlat</span>{% endif %}</td>
-                        <td><a href="/panel/delete/{{ cikk.id }}" class="btn-action" style="background:#ef4444;" onclick="return confirm('Törlöd?')">Törlés</a></td>
+                        <td><a href="/magazin/panel/delete/{{ cikk.id }}" class="btn-action" style="background:#ef4444;" onclick="return confirm('Törlöd?')">Törlés</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         <div id="tab_ujcikk" class="tab-content">
-            <form method="POST" action="/panel/add-cikk" onsubmit="syncEditor()">
+            <form method="POST" action="/magazin/panel/add-cikk" onsubmit="syncEditor()">
                 <div class="f-group"><label>Cikk Címe</label><input type="text" name="title" required></div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                     <div class="f-group"><label>Szerző</label><input type="text" name="author" value="Főszerkesztő"></div>
@@ -221,7 +186,7 @@ ADMIN_PANEL_TEMPLATE = """
             </form>
         </div>
         <div id="tab_hirdetesek" class="tab-content">
-            <form method="POST" action="/panel/add-ad">
+            <form method="POST" action="/magazin/panel/add-ad">
                 <div class="f-group"><label>Hirdetés Megnevezése</label><input type="text" name="ad_title" required></div>
                 <div class="f-group"><label>Hirdetési Banner / Kép URL</label><input type="url" name="ad_image" required></div>
                 <div class="f-group"><label>Cél URL (hova vigyen a kattintás)</label><input type="url" name="ad_url" required></div>
@@ -337,14 +302,14 @@ READER_PANEL_TEMPLATE = """
 </body>
 </html>
 """
-@app.route("/magazin/titkos-admin", methods=["GET", "POST"])
+@admin_bp.route("/titkos-admin", methods=["GET", "POST"])
 def admin_gate():
     if session.get("magazin_logged_in"):
-        return redirect(url_for("admin_panel"))
+        return redirect(url_for("admin_bp.admin_panel"))
     if request.method == "POST":
         if request.form.get("password") == ADMIN_PASSWORD:
             session["magazin_logged_in"] = True
-            return redirect(url_for("admin_panel"))
+            return redirect(url_for("admin_bp.admin_panel"))
         return '<h3>Hibás szerkesztőségi jelszó! <a href="/magazin/titkos-admin">Újra</a></h3>'
     return '''
     <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
@@ -356,22 +321,22 @@ def admin_gate():
     </body>
     '''
 
-@app.route("/logout")
+@admin_bp.route("/logout")
 def logout():
     session["magazin_logged_in"] = False
-    return redirect(url_for("admin_gate"))
+    return redirect(url_for("admin_bp.admin_gate"))
 
-@app.route("/panel")
+@admin_bp.route("/panel")
 def admin_panel():
     if not session.get("magazin_logged_in"):
-        return redirect(url_for("admin_gate"))
+        return redirect(url_for("admin_bp.admin_gate"))
     global DRAFT_ARTICLES, DRAFT_ADS
     cfg = load_config()
     if DRAFT_ARTICLES is None: DRAFT_ARTICLES = list(cfg.get("magazin_cikkek", []))
     if DRAFT_ADS is None: DRAFT_ADS = list(cfg.get("magazin_ads", []))
     return render_template_string(ADMIN_PANEL_TEMPLATE, cikkek=DRAFT_ARTICLES, felhasznalok=cfg.get("felhasznalok", {}), rovatok_nevei=ROVATOK_MAP)
 
-@app.route("/panel/add-cikk", methods=["POST"])
+@admin_bp.route("/panel/add-cikk", methods=["POST"])
 def admin_add_cikk():
     if not session.get("magazin_logged_in"): return "Letiltva", 403
     global DRAFT_ARTICLES
@@ -393,9 +358,9 @@ def admin_add_cikk():
         "published": False
     }
     DRAFT_ARTICLES.append(uj_cikk)
-    return redirect(url_for("admin_panel"))
+    return redirect(url_for("admin_bp.admin_panel"))
 
-@app.route("/panel/add-ad", methods=["POST"])
+@admin_bp.route("/panel/add-ad", methods=["POST"])
 def admin_add_ad():
     if not session.get("magazin_logged_in"): return "Letiltva", 403
     global DRAFT_ADS
@@ -407,25 +372,19 @@ def admin_add_ad():
         "url": request.form.get("ad_url")
     }
     DRAFT_ADS.append(uj_ad)
-    return redirect(url_for("admin_panel"))
+    return redirect(url_for("admin_bp.admin_panel"))
 
-@app.route("/panel/delete/<int:cikk_id>")
+@admin_bp.route("/panel/delete/<int:cikk_id>")
 def admin_delete_cikk(cikk_id):
     if not session.get("magazin_logged_in"): return "Letiltva", 403
     global DRAFT_ARTICLES
     if DRAFT_ARTICLES is not None: DRAFT_ARTICLES = [c for c in DRAFT_ARTICLES if c["id"] != cikk_id]
-    return redirect(url_for("admin_panel"))
+    return redirect(url_for("admin_bp.admin_panel"))
 
-# STRIPE WEBHOOK A FIZETÉSEK AUTOMATIKUS FOGADÁSÁHOZ ÉS INFOMANIAK ÉRTESÍTÉSHEZ
-@app.route("/magazin/stripe-webhook", methods=["POST"])
+@admin_bp.route("/stripe-webhook", methods=["POST"])
 def stripe_webhook():
-    payload = request.data
-    sig_header = request.headers.get("Stripe-Signature")
-    cfg = load_config()
-    # Itt a Stripe esemény feldolgozása történik élesben
-    # Az active státuszt beállítja és Infomaniak e-mailt küld sikeres fizetéskor
     return Response(status=200)
-@app.route("/magazin/olvaso")
+@admin_bp.route("/olvaso")
 def premium_reader_view():
     cfg = load_config()
     cikkek = [c for c in cfg.get("magazin_cikkek", []) if c.get("published", False)]
@@ -434,7 +393,7 @@ def premium_reader_view():
         cikkek = [c for c in cikkek if c.get("category") == kategoria_szuro]
     return render_template_string(READER_PANEL_TEMPLATE, cikkek=cikkek, rovatok=ROVATOK_MAP, current_category=kategoria_szuro)
 
-@app.route("/panel/elesites")
+@admin_bp.route("/panel/elesites")
 def admin_elesites():
     if not session.get("magazin_logged_in"): return "Letiltva", 403
     global DRAFT_ARTICLES, DRAFT_ADS
@@ -445,10 +404,18 @@ def admin_elesites():
         cfg["magazin_cikkek"] = DRAFT_ARTICLES
     if DRAFT_ADS is not None:
         cfg["magazin_ads"] = DRAFT_ADS
+        
+    # AUTOMATIKUS ÖSSZEKÖTÉS: A magazinborító linkjének szoftveres felülírása és rögzítése
+    cfg["cover_links"] = {
+        "kulfold_politika": "/magazin/olvaso",
+        "venia_sokk": "/magazin/olvaso",
+        "vallas_hit": "/magazin/olvaso",
+        "tudomany_tech": "/magazin/olvaso"
+    }
     save_config(cfg)
-    return '<h2>Sikeresen ÉLESÍTVE!</h2><br><a href="/panel">Vissza a pultra</a>'
+    return '<h2>Sikeresen ÉLESÍTVE! A magazin kapuja megnyílt.</h2><br><a href="/magazin/panel">Vissza a pultra</a>'
 
-@app.route('/magazin/titkos-admin/upload-file', methods=['POST'])
+@admin_bp.route('/titkos-admin/upload-file', methods=['POST'])
 def admin_upload_file():
     if not session.get("magazin_logged_in"): return "Letiltva", 403
     if 'file' not in request.files: return "Nincs fájl", 400
@@ -456,16 +423,7 @@ def admin_upload_file():
     if uploaded_file and uploaded_file.filename != '':
         filename = secure_filename(uploaded_file.filename)
         filename = datetime.now().strftime('%H%M%S_') + filename
-        uploaded_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        uploaded_file.save(os.path.join(UPLOAD_FOLDER, filename))
         file_url = f"/uploads/{filename}"
-        return f'<h3>Sikeres feltöltés! A kép elérési útja: {file_url}</h3><br><a href="/panel">Vissza a pultra</a>'
+        return f'<h3>Sikeres feltöltés! A kép elérési útja: {file_url}</h3><br><a href="/magazin/panel">Vissza a pultra</a>'
     return "Hiba a feltöltés során", 400
-
-@app.route('/uploads/<filename>')
-def uploaded_file_serve(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-# A FIXEN LEGALULRA HELYEZETT KÖZÖS SZERVER INDÍTÓBLOKK
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))
-    app.run(host="0.0.0.0", port=port, debug=True)
