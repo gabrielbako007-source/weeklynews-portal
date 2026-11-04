@@ -480,6 +480,7 @@ HTML_TEMPLATE = """
                 </div>
             </div>
         </div>
+        <!-- ================= KÖZÉPSŐ HASÁB ================= -->
         <div class="center-news-stream">
             <div class="main-magazine-cover">
                 <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
@@ -551,10 +552,13 @@ HTML_TEMPLATE = """
     </div> <!-- GRID LEZÁRÁSA -->
     <footer>
         <div class="footer-top-container">
+            <img src="/logo.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto 15px auto;">
             <div class="footer-links-grid">
                 <a href="/impresszum" class="footer-link">I Impresszum</a>
                 <a href="/aszf" class="footer-link">I ÁSZF</a>
                 <a href="/adatvedelem" class="footer-link">I Adatvédelem</a>
+                <a href="/hirdetes" class="footer-link">I Médiaajánlat</a>
+                <a href="/hirdetes" class="footer-link">I Kapcsolat</a>
             </div>
         </div>
     </footer>
@@ -567,8 +571,7 @@ HTML_TEMPLATE = """
 </body>
 </html>
 """
-
-# ================= JOGI SABLONOK =================
+# ================= JOGI ÉS MARKETING SABLONOK =================
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
@@ -593,6 +596,32 @@ JOGI_TEMPLATE = """
 </html>
 """
 
+MARKETING_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Hirdessen a TWN News-on</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1e293b; color: #fff; text-align: center; padding: 50px 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #0f172a; padding: 30px; border-radius: 8px; border: 1px solid #475569; }
+        h1 { color: #38bdf8; }
+        p { line-height: 1.6; color: #cbd5e1; }
+        .back-btn { display: inline-block; margin-top: 20px; background: #ff2a2a; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TWN News Médiaajánlat</h1>
+        <p>Szeretné termékét, szolgáltatását vagy hirdetését elhelyezni a felületünkön?</p>
+        <p><strong>Elérhető felületeink:</strong> Kiemelt képes bannerek, beágyazott hirdetések a hasábok között, és egyedi PR cikkek.</p>
+        <p>Kapcsolatfelvétel: <strong>info@twnnews.hu</strong></p>
+        <a href="/" class="back-btn">⬅ Vissza a címlapra</a>
+    </div>
+</body>
+</html>
+"""
+
 # ================= FLASK ÚTVONALAK (ROUTES) =================
 @app.route("/")
 def index():
@@ -601,6 +630,10 @@ def index():
         STORED_NEWS = scrape_all_news()
     current_config = load_config()
     return render_template_string(HTML_TEMPLATE, news=STORED_NEWS, cfg=current_config)
+
+@app.route("/hirdetes")
+def hirdetes():
+    return render_template_string(MARKETING_TEMPLATE)
 
 @app.route("/impresszum")
 def impresszum():
@@ -614,7 +647,7 @@ def aszf():
 
 @app.route("/adatvedelem")
 def adatvedelem():
-    szoveg = "<h3>1. Adatkezelés</h3><p>A TWN News kizárójal üzleti kapcsolattartás céljából kezel személyes adatokat (nevet és e-mail címet).</p>"
+    szoveg = "<h3>1. Adatkezelés</h3><p>A TWN News kizárólag üzleti kapcsolattartás céljából kezel személyes adatokat (nevet és e-mail címet).</p>"
     return render_template_string(JOGI_TEMPLATE, cim="Adatvédelmi Tájékoztató (GDPR)", tartalom=szoveg)
 
 @app.route('/logo_kepek/<path:filename>')
