@@ -149,7 +149,6 @@ HTML_TEMPLATE = """
         .nav-bar { background-color: #0f172a; padding: 0px 1rem; display: flex; justify-content: center; border-bottom: 1px solid #475569; flex-wrap: wrap; }
         .nav-item { color: white; font-family: sans-serif; font-weight: bold; padding: 1.1rem 1.5rem; text-decoration: none; font-size: 1.05rem; }
         .btn-refresh { background-color: #ff2a2a; color: white; padding: 1.1rem 1.5rem; font-family: sans-serif; font-weight: bold; text-transform: uppercase; text-decoration: none; }
-        
         .three-column-grid-container {
             display: grid;
             grid-template-columns: 320px 1fr 320px;
@@ -197,7 +196,7 @@ HTML_TEMPLATE = """
         .rovat-title { font-family: sans-serif; font-size: 1.6rem; font-weight: 900; color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 0.3rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; }
         .ujsag-box-card { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .ujsag-logo-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; }
+        .ujsag-logo-img { width: 90px; height: 90px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #334155; object-fit: cover; }
         .cikk-row { width: 100%; border-top: 1px solid #233142; padding-top: 8px; margin-top: 8px; text-align: left; }
         .cikk-link { font-size: 0.95rem; font-weight: bold; color: #ffffff; text-decoration: none; line-height: 1.4; display: block; }
         .cikk-link:hover { color: #2ea6f2; text-decoration: underline; }
@@ -380,7 +379,7 @@ HTML_TEMPLATE = """
                 </div>
             </div>
         </div>
-    </div> <!-- GRID TÖKÉLETES LEZÁRÁSA -->
+    </div> <!-- GRID LEZÁRÁSA -->
     
     <footer>
         <div class="footer-top-container">
@@ -402,10 +401,29 @@ HTML_TEMPLATE = """
 </body>
 </html>
 """
-# ================= JOGI ÉS MARKETING SABLONOK MEGHÍVÁSA =================
+
+JOGI_TEMPLATE = """
+<html><body style="font-family:sans-serif; background:#1e293b; color:#fff; padding:40px;">
+<h2>{{ cim }}</h2><div>{{ tartalom | safe }}</div><br><a href="/" style="color:#38bdf8;">⬅ Vissza</a>
+</body></html>
+"""
+ADMIN_TEMPLATE = """
+<html><body style="font-family:sans-serif; background:#0f172a; color:#fff; padding:40px;">
+<h2>TWN Rendszerbeállítások</h2><form method="POST">
+<h3>Borító Linkek</h3>
+<label>Külföld:</label><input type="text" name="cover_kulfold" value="{{ cfg.cover_links.kulfold_politika }}"><br>
+<label>Venia:</label><input type="text" name="cover_venia" value="{{ cfg.cover_links.venia_sokk }}"><br>
+<label>Vallás:</label><input type="text" name="cover_vallas" value="{{ cfg.cover_links.vallas_hit }}"><br>
+<label>Tech:</label><input type="text" name="cover_tech" value="{{ cfg.cover_links.tudomany_tech }}"><br>
+<h3>Hirdetések</h3>
+<label>Típus:</label><input type="text" name="vallas_ad_type" value="{{ cfg.ads.vallas_ad.type }}"><br>
+<label>Tartalom:</label><input type="text" name="vallas_ad_content" value="{{ cfg.ads.vallas_ad.content }}"><br>
+<label>Cél URL:</label><input type="text" name="vallas_ad_url" value="{{ cfg.ads.vallas_ad.url }}"><br>
+<button type="submit">Mentés</button></form></body></html>
+"""# ================= FLASK KÓDLOGIKA ÉS VÉGPONTOK =================
 @app.route("/impresszum")
 def impresszum():
-    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p><h3>Felelősségi nyilatkozat:</h3><p>A TWN News felületén megjelenő hírek jelentős része egy automatizált rendszeren keresztül, külső sajtóorgánumok nyilvánosan elérhető RSS csatornáiból származik.</p>"
+    szoveg = "<h3>Alapító-főszerkesztő és Tulajdonos:</h3><p>[A Te Neved / Céged megnevezése]<br>E-mail: info@twnnews.hu</p><h3>Felelősségi nyilatkozat:</h3><p>A TWN News felületén megjelenő hírek jelentős része egy automatizált systemen keresztül, külső sajtóorgánumok nyilvánosan elérhető RSS csatornáiból származik.</p>"
     return render_template_string(JOGI_TEMPLATE, cim="Impresszum", tartalom=szoveg)
 
 @app.route("/aszf")
@@ -472,3 +490,4 @@ app.register_blueprint(admin_bp)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
