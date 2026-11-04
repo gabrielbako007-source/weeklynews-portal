@@ -520,15 +520,16 @@ HTML_TEMPLATE = """
                             {% endif %}
                         </div>
                     {% endfor %}
-                </div>
-            </div>
+                            </div>
         </div>
-        <!-- ================= KÖZÉPSŐ HASÁB ================= -->
-  <div class="main-magazine-cover" style="display: block; width: 100%; max-width: 480px; margin: 0 auto 3rem auto; height: auto; box-shadow: none; border: none;">
-    <a href="/magazin/olvaso" target="_blank" style="display: block; width: 100%; height: auto; text-decoration: none;">
-        <img src="/friss_magazin.jpg" alt="The Weekly News Címlap" style="width: 100%; height: auto; display: block; border: 2px solid #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.5);">
-    </a>
-</div>
+        <div class="center-news-stream">
+            <div class="main-magazine-cover">
+                <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
+                <a href="{{ cfg.cover_links.kulfold_politika }}" target="_blank" class="cover-hotspot hs-kulfold" title="Külföld & Politika"></a>
+                <a href="{{ cfg.cover_links.venia_sokk }}" target="_blank" class="cover-hotspot hs-venia" title="Venia-Sokk"></a>
+                <a href="{{ cfg.cover_links.vallas_hit }}" target="_blank" class="cover-hotspot hs-vallas" title="Vallás, Hit & Erkölcs"></a>
+                <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
+            </div>
 
 
             <div class="rovat-section" id="belfold">
