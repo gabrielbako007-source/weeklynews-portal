@@ -380,15 +380,11 @@ HTML_TEMPLATE = """
         </div>
     </div> <!-- FAJALIS GRID LEZÁRÁS -->
     
-    <footer>
-           <footer>
-           <footer>
-        <div class="footer-top-container">
-            <img src="/logo.png.png">
+    <footer style="background-color: #737373; padding: 30px 20px; margin-top: 5rem; border-top: 4px solid #ff2a2a; text-align: center;">
+        <div class="footer-top-container" style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: center; align-items: center; padding-bottom: 15px;">
+            <img src="/logo.png.png" style="max-width: 340px; width: 100%; height: auto; display: block; margin: 0 auto;">
         </div>
-
-
-        <div class="footer-links-grid">
+        <div class="footer-links-grid" style="display: flex; justify-content: center; gap: 25px; width: 100%; flex-wrap: wrap;">
             <a href="/impresszum" class="footer-link">I Impresszum</a>
             <a href="/aszf" class="footer-link">I ÁSZF</a>
             <a href="/adatvedelem" class="footer-link">I Adatvédelem</a>
@@ -396,13 +392,14 @@ HTML_TEMPLATE = """
             <a href="/hirdetes" class="footer-link">I Kapcsolat</a>
         </div>
     </footer>
-    <div class="footer-bottom-dark-bar">
-        <div class="footer-bottom-container">
-            <p>&copy; 2026 THE WEEKLY TWN NEWS. Minden jog fenntartva.</p>
+    <div class="footer-bottom-dark-bar" style="background-color: #171717; padding: 25px 20px; font-size: 0.8rem; color: #a3a3a3; line-height: 1.6; text-align: center;">
+        <div class="footer-bottom-container" style="max-width: 1400px; margin: 0 auto;">
+            <p style="margin: 0;">&copy; 2026 THE WEEKLY TWN NEWS. Minden jog fenntartva.</p>
         </div>
     </div>
 </body>
 </html>
+
 """
 
 JOGI_TEMPLATE = """
