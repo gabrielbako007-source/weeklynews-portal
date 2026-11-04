@@ -410,6 +410,7 @@ HTML_TEMPLATE = """
 
 JOGI_TEMPLATE = """
 <!DOCTYPE html>
+
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
