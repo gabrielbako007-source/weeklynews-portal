@@ -524,14 +524,12 @@ HTML_TEMPLATE = """
             </div>
         </div>
         <!-- ================= KÖZÉPSŐ HASÁB ================= -->
-        <div class="center-news-stream">
-            <div class="main-magazine-cover">
-                <img src="/friss_magazin.jpg" alt="The Weekly News Címlap">
-                <a href="{{ cfg.cover_links.kulfold_politika }}" target="_blank" class="cover-hotspot hs-kulfold" title="Külföld & Politika"></a>
-                <a href="{{ cfg.cover_links.venia_sokk }}" target="_blank" class="cover-hotspot hs-venia" title="Venia-Sokk"></a>
-                <a href="{{ cfg.cover_links.vallas_hit }}" target="_blank" class="cover-hotspot hs-vallas" title="Vallás, Hit & Erkölcs"></a>
-                <a href="{{ cfg.cover_links.tudomany_tech }}" target="_blank" class="cover-hotspot hs-tech" title="Tudomány & Tech"></a>
-            </div>
+        <div class="main-magazine-cover">
+    <a href="/magazin/olvaso" target="_blank" style="display: block; width: 100%; height: 100%;">
+        <img src="/friss_magazin.jpg" alt="The Weekly News Címlap" style="width: 100%; height: auto; display: block;">
+    </a>
+</div>
+
             <div class="rovat-section" id="belfold">
                 <div class="rovat-title">Belföld hírei</div>
                 <div class="news-grid">
@@ -799,7 +797,7 @@ def serve_top_logo():
     import os
     return send_from_directory(os.getcwd(), "twn_logo.png")
 
-from admin_rendszer import admin_bp
+from magazin_fajl_neve import admin_bp
 app.register_blueprint(admin_bp)
 
 if __name__ == "__main__":
