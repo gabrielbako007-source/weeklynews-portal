@@ -624,3 +624,16 @@ def import_pdf_do():
         "author": "PDF import",
         "read_time": "1 perc",
         "content": html,
+       "youtube": "",
+        "mp3": "",
+        "image": "",
+        "published": False
+    })
+    save_config(cfg)
+
+    # Ideiglenes fájlok takarítása a Renderről
+    for ut in (pdf_ut, docx_ut):
+        if os.path.exists(ut):
+            os.remove(ut)
+
+    return redirect(url_for('admin_bp.szerkeszto'))
