@@ -156,7 +156,7 @@ MAGAZIN_TEMPLATE = """
         .wrap { max-width:1200px; margin:0 auto; padding:20px; }
         
         /* Megnövelt, szélesebb sötétkék fejléc a logó kényelmes elhelyezéséhez */
-        .header-bg { background:#27313e; border-bottom:3px solid #ff2a2a; padding:10px 0; width:100%; box-sizing: border-box; }
+        .header-bg { background:#27313e; border-bottom:3px solid #ff2a2a; padding:2px 0 10px 0; width:100%; box-sizing: border-box; }
         .header-container { max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; padding:0 30px; flex-wrap:wrap; gap: 20px; }
         
         /* A GitHubon lévő twn_logo.png pontos, fix méretezése */
