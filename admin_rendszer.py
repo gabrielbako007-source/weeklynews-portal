@@ -498,7 +498,7 @@ def panel_save(cikk_id):
 # ============================================================
 # ÚTVONALAK — OLVASÓ + VIZUÁLIS SZERKESZTŐ
 # ============================================================
-@admin_bp.route('/olvaso')
+@admin_bp.route('/')
 def olvaso():
     cfg = load_config()
     publikaltak = [c for c in cfg.get("magazin_cikkek", []) if c.get("published")]
