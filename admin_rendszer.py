@@ -376,37 +376,109 @@ ADMIN_PANEL_TEMPLATE = """
 </html>
 """
 # ================= 5. BLOKK: INFOMANIAK FELHŐTÁRHELY ÉS ARCHÍVUM =================
+import os
 import re
+import datetime
 import requests
 from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'pdf'}
 
-# Az Infomaniak kDrive / WebDAV felhő elérés adatai (Környezeti változókból)
-INFOMANIAK_USER = os.environ.get("SMTP_USER", "infotwn@etik.com")
-INFOMANIAK_PASS = os.environ.get("SMTP_PASSWORD", "app_password_placeholder")
-# Az Infomaniak hivatalos kDrive WebDAV alapcíme
-WEBDAV_URL = "https://infomaniak.com"
+# ============================================================
+# INFOMANIAK kDrive WebDAV BEÁLLÍTÁSOK
+# ============================================================
+# 1. A kDrive ID-d: nyisd meg a https://infomaniak.com oldalt,
+#    a böngésző címsorában látsz egy számot a "/drive/" után.
+#    Az a TE kDrive ID-d (pl. 123456)
+# 2. Alkalmazási jelszó: kDrive → Beállítások → Biztonság → Alkalmazási jelszók
+#    → Létrehozás. EZT használd, nem a fő jelszavadat!
+
+INFOMANIAK_USER = os.environ.get("INFOMANIAK_USER", "infotwn@etik.com")
+INFOMANIAK_PASS = os.environ.get("INFOMANIAK_PASS", "ITT_LEGYEN_AZ_ALKALMAZASI_JELSZO")
+# A kDrive ID-dat írd be a [BEIRAS] helyére (a kDrive web app URL-jéből):
+KDRIVE_ID = "2469838"  
+WEBDAV_URL = f"https://{KDRIVE_ID}.connect.kdrive.infomaniak.com"
+
+# ============================================================
+# SEGÉDFÜGGVÉNYEK
+# ============================================================
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+def webdav_request(method, remote_path, data=None):
+    """WebDAV kérés elküldése a kDrive szerverre"""
+    url = f"{WEBDAV_URL}/{remote_path.lstrip('/')}"
+    auth = (INFOMANIAK_USER, INFOMANIAK_PASS)
+    if method == "PUT":
+        resp = requests.put(url, data=data, auth=auth)
+    elif method == "MKCOL":
+        resp = requests.request("MKCOL", url, auth=auth)
+    elif method == "PROPFIND":
+        headers = {"Depth": "0"}
+        resp = requests.request("PROPFIND", url, auth=auth, headers=headers)
+    return resp
+
+
+def ensure_remote_folder(remote_folder_path):
+    """Létrehozza a távoli mappákat, ha nincsenek meg (rekurzívan)"""
+    # Először ellenőrizzük, hogy létezik-e
+    resp = webdav_request("PROPFIND", remote_folder_path)
+    if resp.status_code in:
+        return True  # már létezik
+
+    # Ha nem létezik, felbontjuk a szülő mappákra
+    parts = remote_folder_path.strip('/').split('/')
+    current_path = ""
+    for part in parts:
+        current_path = f"{current_path}/{part}"
+        resp = webdav_request("PROPFIND", current_path)
+        if resp.status_code in:
+            continue  # ez a szint már létezik
+        # Létrehozzuk
+        resp = webdav_request("MKCOL", current_path)
+        if resp.status_code not in:
+            # 405 = Method Not Allowed → már létezik (néhány szerver így válaszol)
+            if resp.status_code != 405:
+                print(f"WebDAV hiba mappakészítésnél: {current_path} → {resp.status_code}")
+                return False
+    return True
+
+
 def upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut):
-    """Fájlok automatikus felküldése az Infomaniak 20 GB-os svájci biztonságos tárhelyére"""
-    try:
-        url = f"{WEBDAV_URL}{felho_fajl_ut}"
-        with open(helyi_fajl_ut, 'rb') as f:
-            response = requests.put(url, data=f, auth=(INFOMANIAK_USER, INFOMANIAK_PASS))
-        return response.status_code in [201, 204]
-    except:
+    """Fájl felküldése a kDrive WebDAV szerverre"""
+    # 1. Mappák létrehozása
+    remote_folder = os.path.dirname(felho_fajl_ut)
+    if not ensure_remote_folder(remote_folder):
+        print(f"Nem sikerült létrehozni a mappát: {remote_folder}")
         return False
 
+    # 2. Fájl feltöltése
+    try:
+        with open(helyi_fajl_ut, 'rb') as f:
+            resp = requests.put(
+                f"{WEBDAV_URL}/{felho_fajl_ut.lstrip('/')}",
+                data=f,
+                auth=(INFOMANIAK_USER, INFOMANIAK_PASS)
+            )
+        if resp.status_code in:
+            return True
+        else:
+            print(f"WebDAV feltöltési hiba: {resp.status_code} - {resp.text}")
+            return False
+    except Exception as e:
+        print(f"WebDAV hiba: {e}")
+        return False
+
+
 def extract_txt_from_pdf_pure(pdf_path):
-    """Beépített tiszta háttér-szövegkinyerő algoritmus PDF dokumentumokhoz"""
+    """Egyszerű szövegkinyerés PDF-ből (regex alapú)"""
     txt_content = []
     try:
         with open(pdf_path, 'rb') as f:
             content = f.read()
+            # PDF szövegtömbök kinyerése
             strings = re.findall(b'BT(.*?)ET', content, re.DOTALL)
             for s in strings:
                 text_segments = re.findall(b'\((.*?)\)', s)
@@ -417,57 +489,74 @@ def extract_txt_from_pdf_pure(pdf_path):
                             txt_content.append(decoded.strip())
                     except:
                         pass
-        return " ".join(txt_content) if txt_content else "A PDF szövege sikeresen beolvasva, formázásra kész."
+        return " ".join(txt_content) if txt_content else "A PDF szövege beolvasva, de nem tartalmazott kinyerhető szöveget."
     except Exception as e:
         return f"[Hiba a PDF olvasása során: {str(e)}]"
 
+
+# ============================================================
+# FLASK ÚTVONAL
+# ============================================================
+
 @admin_bp.route('/titkos-admin/upload-file', methods=['POST'])
 def admin_upload_file():
-    if not session.get("magazin_logged_in"): 
+    if not session.get("magazin_logged_in"):
         return "Letiltva", 403
-    if 'file' not in request.files: 
+
+    if 'file' not in request.files:
         return "Nincs fájl a kérésben", 400
-        
+
     uploaded_file = request.files['file']
-    if uploaded_file.filename == '': 
+    if uploaded_file.filename == '':
         return "Nincs kiválasztott fájl", 400
-        
+
     if uploaded_file and allowed_file(uploaded_file.filename):
         filename = secure_filename(uploaded_file.filename)
         ext = filename.rsplit('.', 1)[1].lower()
-        
-        # Naptári időbélyegek generálása az archívumhoz
-        mai_datum = datetime.now()
+
+        # Naptári időbélyeg
+        mai_datum = datetime.datetime.now()
         idokiiratas = mai_datum.strftime('%Y-%m')
         het_szama = mai_datum.isocalendar()[1]
-        
-        # Ideiglenes helyi mentés a Renderen az átküldés előtt
+
+        # Helyi ideiglenes mentés
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER)
         unique_prefix = mai_datum.strftime('%H%M%S_')
         vegleges_fajlnev = unique_prefix + filename
         helyi_fajl_ut = os.path.join(UPLOAD_FOLDER, vegleges_fajlnev)
         uploaded_file.save(helyi_fajl_ut)
-        
-        # Hivatalos mappaútvonal az Infomaniak felhőben
-        felho_mappa_ut = f"/archivum/{idokiiratas}/{het_szama}_het"
+
+        # KDrive útvonal
+        felho_mappa_ut = f"archivum/{idokiiratas}/{het_szama}_het"
         felho_fajl_ut = f"{felho_mappa_ut}/{vegleges_fajlnev}"
-        
-        # Felküldés az Infomaniak felhőbe
-        sikeres_mentes = upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut)
-        
-        # A helyi ideiglenes fájlt letakarítjuk a Renderről a tárhely védelmében
-        if os.path.exists(helyi_fajl_ut):
-            os.remove(helyi_fajl_ut)
-            
-        # Külső éles link az olvasói felülethez (Infomaniak tárhelyről)
-        web_eleresi_ut = f"{WEBDAV_URL}{felho_fajl_ut}"
-        
+
+        # PDF szövegkinyerés ELŐTT a törlés (FONTOS!)
+        kinyert_szoveg = ""
         if ext == 'pdf':
             kinyert_szoveg = extract_txt_from_pdf_pure(helyi_fajl_ut)
+
+        # Felküldés a kDrive-be
+        sikeres_mentes = upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut)
+
+        # Helyi fájl törlése (már felküldtük)
+        if os.path.exists(helyi_fajl_ut):
+            os.remove(helyi_fajl_ut)
+
+        if not sikeres_mentes:
+            return '''
+            <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding:40px;">
+                <h3 style="color:#ff2a2a;">HIBA A FELTÖLTÉSNÉL!</h3>
+                <p>Kérd meg a kDrive ID-t és az alkalmazási jelszót.</p>
+                <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold;">Vissza a pultra</a>
+            </body>
+            ''', 500
+
+        # Sikeres feltöltés – válasz
+        if ext == 'pdf':
             return f'''
             <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding:40px;">
-                <h3 style="color:#38bdf8;">PDF SZÖVEG SIKERESEN KINYERVE INFOMANIAK FELHŐBŐL!</h3>
+                <h3 style="color:#38bdf8;">PDF SIKERESEN FELTÖLTVE A KDRIVE-BA!</h3>
                 <p>Archívum helye: <b style="color:#ff2a2a;">{idokiiratas} / {het_szama}. hét</b></p>
                 <div style="max-width:800px; margin:20px auto; background:#1e293b; padding:20px; border-radius:6px; text-align:left; max-height:250px; overflow-y:auto; border:1px solid #475569;">
                     <p style="margin:0; line-height:1.6; color:#cbd5e1;">{kinyert_szoveg}</p>
@@ -475,13 +564,14 @@ def admin_upload_file():
                 <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase;">Vissza a pultra</a>
             </body>
             '''
-        
+
         return f'''
         <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
-            <h3>Sikeres képfeltöltés az Infomaniak felhőbe!</h3>
+            <h3 style="color:#38bdf8;">Sikeres képfeltöltés a kDrive-be!</h3>
             <p>Mentési hely: <b>{idokiiratas} / {het_szama}. hét</b></p>
-            <input type="text" value="{web_eleresi_ut}" style="padding:10px; width:450px; text-align:center; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px;" readonly><br><br>
-            <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase;">Vissza a pultra</a>
+            <p>Fájl: <b>{vegleges_fajlnev}</b></p>
+            <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase;">Vissza a pultra</a>
         </body>
         '''
+
     return "Nem támogatott fájlformátum! Csak .jpg, .jpeg vagy .pdf tölthető fel.", 400
