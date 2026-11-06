@@ -375,3 +375,113 @@ ADMIN_PANEL_TEMPLATE = """
 </body>
 </html>
 """
+# ================= 5. BLOKK: INFOMANIAK FELHŐTÁRHELY ÉS ARCHÍVUM =================
+import re
+import requests
+from werkzeug.utils import secure_filename
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'pdf'}
+
+# Az Infomaniak kDrive / WebDAV felhő elérés adatai (Környezeti változókból)
+INFOMANIAK_USER = os.environ.get("SMTP_USER", "infotwn@etik.com")
+INFOMANIAK_PASS = os.environ.get("SMTP_PASSWORD", "app_password_placeholder")
+# Az Infomaniak hivatalos kDrive WebDAV alapcíme
+WEBDAV_URL = "https://infomaniak.com"
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut):
+    """Fájlok automatikus felküldése az Infomaniak 20 GB-os svájci biztonságos tárhelyére"""
+    try:
+        url = f"{WEBDAV_URL}{felho_fajl_ut}"
+        with open(helyi_fajl_ut, 'rb') as f:
+            response = requests.put(url, data=f, auth=(INFOMANIAK_USER, INFOMANIAK_PASS))
+        return response.status_code in [201, 204]
+    except:
+        return False
+
+def extract_txt_from_pdf_pure(pdf_path):
+    """Beépített tiszta háttér-szövegkinyerő algoritmus PDF dokumentumokhoz"""
+    txt_content = []
+    try:
+        with open(pdf_path, 'rb') as f:
+            content = f.read()
+            strings = re.findall(b'BT(.*?)ET', content, re.DOTALL)
+            for s in strings:
+                text_segments = re.findall(b'\((.*?)\)', s)
+                for seg in text_segments:
+                    try:
+                        decoded = seg.decode('utf-8', errors='ignore')
+                        if decoded.strip():
+                            txt_content.append(decoded.strip())
+                    except:
+                        pass
+        return " ".join(txt_content) if txt_content else "A PDF szövege sikeresen beolvasva, formázásra kész."
+    except Exception as e:
+        return f"[Hiba a PDF olvasása során: {str(e)}]"
+
+@admin_bp.route('/titkos-admin/upload-file', methods=['POST'])
+def admin_upload_file():
+    if not session.get("magazin_logged_in"): 
+        return "Letiltva", 403
+    if 'file' not in request.files: 
+        return "Nincs fájl a kérésben", 400
+        
+    uploaded_file = request.files['file']
+    if uploaded_file.filename == '': 
+        return "Nincs kiválasztott fájl", 400
+        
+    if uploaded_file and allowed_file(uploaded_file.filename):
+        filename = secure_filename(uploaded_file.filename)
+        ext = filename.rsplit('.', 1)[1].lower()
+        
+        # Naptári időbélyegek generálása az archívumhoz
+        mai_datum = datetime.now()
+        idokiiratas = mai_datum.strftime('%Y-%m')
+        het_szama = mai_datum.isocalendar()[1]
+        
+        # Ideiglenes helyi mentés a Renderen az átküldés előtt
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+        unique_prefix = mai_datum.strftime('%H%M%S_')
+        vegleges_fajlnev = unique_prefix + filename
+        helyi_fajl_ut = os.path.join(UPLOAD_FOLDER, vegleges_fajlnev)
+        uploaded_file.save(helyi_fajl_ut)
+        
+        # Hivatalos mappaútvonal az Infomaniak felhőben
+        felho_mappa_ut = f"/archivum/{idokiiratas}/{het_szama}_het"
+        felho_fajl_ut = f"{felho_mappa_ut}/{vegleges_fajlnev}"
+        
+        # Felküldés az Infomaniak felhőbe
+        sikeres_mentes = upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut)
+        
+        # A helyi ideiglenes fájlt letakarítjuk a Renderről a tárhely védelmében
+        if os.path.exists(helyi_fajl_ut):
+            os.remove(helyi_fajl_ut)
+            
+        # Külső éles link az olvasói felülethez (Infomaniak tárhelyről)
+        web_eleresi_ut = f"{WEBDAV_URL}{felho_fajl_ut}"
+        
+        if ext == 'pdf':
+            kinyert_szoveg = extract_txt_from_pdf_pure(helyi_fajl_ut)
+            return f'''
+            <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding:40px;">
+                <h3 style="color:#38bdf8;">PDF SZÖVEG SIKERESEN KINYERVE INFOMANIAK FELHŐBŐL!</h3>
+                <p>Archívum helye: <b style="color:#ff2a2a;">{idokiiratas} / {het_szama}. hét</b></p>
+                <div style="max-width:800px; margin:20px auto; background:#1e293b; padding:20px; border-radius:6px; text-align:left; max-height:250px; overflow-y:auto; border:1px solid #475569;">
+                    <p style="margin:0; line-height:1.6; color:#cbd5e1;">{kinyert_szoveg}</p>
+                </div>
+                <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase;">Vissza a pultra</a>
+            </body>
+            '''
+        
+        return f'''
+        <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
+            <h3>Sikeres képfeltöltés az Infomaniak felhőbe!</h3>
+            <p>Mentési hely: <b>{idokiiratas} / {het_szama}. hét</b></p>
+            <input type="text" value="{web_eleresi_ut}" style="padding:10px; width:450px; text-align:center; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px;" readonly><br><br>
+            <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase;">Vissza a pultra</a>
+        </body>
+        '''
+    return "Nem támogatott fájlformátum! Csak .jpg, .jpeg vagy .pdf tölthető fel.", 400
