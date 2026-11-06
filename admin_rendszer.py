@@ -550,9 +550,14 @@ def szerkeszto():
 # ============================================================
 @admin_bp.route('/titkos-admin/upload-file', methods=['GET', 'POST'])
 def admin_upload_file():
+    import os
+    import datetime
+    from flask import request, session, render_template, redirect, url_for
+    from werkzeug.utils import secure_filename
+
     if request.method == 'GET':
         return render_template('admin_panel.html')
-        
+
     if not session.get("magazin_logged_in"):
         return "Letiltva", 403
     if 'file' not in request.files:
@@ -563,8 +568,6 @@ def admin_upload_file():
     if not allowed_file(uploaded_file.filename):
         return "Nem támogatott fájlformátum! Csupán .jpg, .jpeg vagy .pdf tölthető fel.", 400
 
-    from watchlist import secure_filename
-    import datetime
     filename = secure_filename(uploaded_file.filename)
     mai_datum = datetime.datetime.now()
     idokiiratas = mai_datum.strftime('%Y-%m')
@@ -599,7 +602,6 @@ def admin_upload_file():
         <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px;">Vissza a pultra</a>
     </body>
     '''
-
 
 # ============================================================
 # ÚTVONAL — PDF MOTOR (PDF -> Word -> HTML -> szerkeszthető cikk)
