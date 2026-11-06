@@ -1,23 +1,23 @@
 import os
 import re
 import json
-import secrets
 import smtplib
+import subprocess
 import datetime
 import requests
 from email.mime.text import MIMEText
-from datetime import datetime
-from flask import Blueprint, render_template_string, redirect, url_for, request, session, Response, send_from_directory
+from flask import Blueprint, render_template_string, redirect, url_for, request, session
 from werkzeug.utils import secure_filename
 
-# Blueprint modul konfigurálása az 1. rendszer általi közös indításhoz
+# ============================================================
+# BLUEPRINT + ALAP KONFIG
+# ============================================================
 admin_bp = Blueprint('admin_bp', __name__, url_prefix='/magazin')
 
 CONFIG_FILE = "twn_config.json"
 ADMIN_PASSWORD = "twnadmin2026"
 UPLOAD_FOLDER = 'uploads'
 
-# A PONTOS, ÖSSZEVONT ROVATSTRUKTÚRA MAPPING
 ROVATOK_MAP = {
     "news": "NEWS",
     "hit_csalad_erkolcs": "HIT, CSALÁD & ERKÖLCS",
@@ -35,7 +35,7 @@ DEFAULT_CONFIG = {
             "category": "hit_csalad_erkolcs",
             "author": "Főszerkesztő",
             "read_time": "1 perc",
-            "content": "Ez az első minta cikked. A Canva-motorral vizuálisan szerkesztheted, képeket tölthetsz fel, és rovatokba rendezheted a tartalmat.",
+            "content": "<p>Ez az első minta cikked. A szerkesztőben szerkesztheted, képeket tölthetsz fel, és rovatokba rendezheted a tartalmat.</p>",
             "youtube": "",
             "mp3": "",
             "image": "",
@@ -43,27 +43,8 @@ DEFAULT_CONFIG = {
         }
     ],
     "magazin_ads": [],
-    "felhasznalok": {
-        "teszt_olvaso@twn.hu": {
-            "password_hash": "dummy_hash",
-            "status": "active",
-            "stripe_customer_id": "cus_test123",
-            "stripe_subscription_id": "sub_test123",
-            "last_payment": "2026-11-04"
-        }
-    }
+    "felhasznalok": {}
 }
-
-# ============================================================
-# INFOMANIAK kDrive WebDAV BEÁLLÍTÁSOK
-# ============================================================
-# 1. kDrive ID: a kDrive web app URL-jéből a "/drive/" utáni szám.
-# 2. Alkalmazási jelszó: kDrive → Beállítások → Biztonság → Alkalmazási jelszók.
-INFOMANIAK_USER = os.environ.get("INFOMANIAK_USER", "infotwn@etik.com")
-INFOMANIAK_PASS = os.environ.get("INFOMANIAK_PASS", "ITT_LEGYEN_AZ_ALKALMAZASI_JELSZO")
-KDRIVE_ID = "2469838"
-WEBDAV_URL = f"https://{KDRIVE_ID}.connect.kdrive.infomaniak.com"
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'pdf'}
 
 
 def load_config():
@@ -74,7 +55,7 @@ def load_config():
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
-    except:
+    except Exception:
         return DEFAULT_CONFIG
 
 
@@ -89,31 +70,185 @@ def kuldo_infomaniak_email(hova, targy, szoveg):
         msg["Subject"] = targy
         msg["From"] = os.environ.get("SMTP_USER", "infotwn@etik.com")
         msg["To"] = hova
-        with smtplib.SMTP(os.environ.get("SMTP_SERVER", "SMTP_SZERVER"), int(os.environ.get("SMTP_PORT", 587))) as server:
+        with smtplib.SMTP(os.environ.get("SMTP_SERVER", "mail.infomaniak.com"),
+                          int(os.environ.get("SMTP_PORT", 587))) as server:
             server.starttls()
-            server.login(os.environ.get("SMTP_USER", "infotwn@etik.com"), os.environ.get("SMTP_PASSWORD", "app_password_placeholder"))
+            server.login(os.environ.get("SMTP_USER", "infotwn@etik.com"),
+                         os.environ.get("SMTP_PASSWORD", ""))
             server.sendmail(os.environ.get("SMTP_USER", "infotwn@etik.com"), [hova], msg.as_string())
         return True
-    except:
+    except Exception:
         return False
 
 
-DRAFT_ARTICLES = None
-DRAFT_ADS = None
+# ============================================================
+# INFOMANIAK kDrive WEBDAV
+# ============================================================
+INFOMANIAK_USER = os.environ.get("INFOMANIAK_USER", "infotwn@etik.com")
+INFOMANIAK_PASS = os.environ.get("INFOMANIAK_PASS", "")
+KDRIVE_ID = "2469838"
+WEBDAV_URL = f"https://{KDRIVE_ID}.connect.kdrive.infomaniak.com"
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'pdf'}
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def webdav_request(method, remote_path, data=None):
+    url = f"{WEBDAV_URL}/{remote_path.lstrip('/')}"
+    auth = (INFOMANIAK_USER, INFOMANIAK_PASS)
+    if method == "PUT":
+        return requests.put(url, data=data, auth=auth)
+    if method == "MKCOL":
+        return requests.request("MKCOL", url, auth=auth)
+    if method == "PROPFIND":
+        return requests.request("PROPFIND", url, auth=auth, headers={"Depth": "0"})
+    return None
+
+
+def ensure_remote_folder(remote_folder_path):
+    resp = webdav_request("PROPFIND", remote_folder_path)
+    if resp is not None and resp.status_code in [200, 207]:
+        return True
+    parts = remote_folder_path.strip('/').split('/')
+    current_path = ""
+    for part in parts:
+        current_path = f"{current_path}/{part}"
+        resp = webdav_request("PROPFIND", current_path)
+        if resp is not None and resp.status_code in [200, 207]:
+            continue
+        resp = webdav_request("MKCOL", current_path)
+        if resp is not None and resp.status_code not in [201, 207, 405]:
+            print(f"WebDAV hiba mappakészítésnél: {current_path} -> {resp.status_code}")
+            return False
+    return True
+
+
+def upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut):
+    remote_folder = os.path.dirname(felho_fajl_ut)
+    if not ensure_remote_folder(remote_folder):
+        print(f"Nem sikerült létrehozni a mappát: {remote_folder}")
+        return False
+    try:
+        with open(helyi_fajl_ut, 'rb') as f:
+            resp = requests.put(f"{WEBDAV_URL}/{felho_fajl_ut.lstrip('/')}",
+                                data=f, auth=(INFOMANIAK_USER, INFOMANIAK_PASS))
+        return resp.status_code in [201, 204]
+    except Exception as e:
+        print(f"WebDAV hiba: {e}")
+        return False
+
+
+# ============================================================
+# OLVASÓ / SZERKESZTŐ — KÖZÖS SABLON (ugyanaz a kinézet)
+# ============================================================
+MAGAZIN_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Weekly News</title>
+    <style>
+        body { font-family:'Arial',sans-serif; margin:0; background:#1e293b; color:#fff; }
+        .wrap { max-width:900px; margin:0 auto; padding:20px; }
+        .header { text-align:center; padding:30px 10px; border-bottom:3px solid #ff2a2a; }
+        .header h1 { margin:0; letter-spacing:2px; }
+        .rovat { margin:40px 0; }
+        .rovat-title { font-size:1.5rem; font-weight:900; color:#38bdf8; border-bottom:3px solid #38bdf8; padding-bottom:8px; text-transform:uppercase; }
+        .cikk { background:#0f172a; border:1px solid #475569; border-radius:8px; padding:25px; margin:20px 0; }
+        .cikk h2 { color:#fff; margin-top:0; }
+        .cikk .meta { color:#94a3b8; font-size:0.85rem; margin-bottom:12px; }
+        .cikk .borito { width:100%; border-radius:6px; margin-bottom:12px; }
+        .cikk .body { color:#cbd5e1; line-height:1.8; font-size:1.05rem; }
+        .video-container { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; margin:12px 0; border-radius:6px; }
+        .video-container iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+        .empty { text-align:center; color:#94a3b8; padding:60px 20px; }
+        .back { display:inline-block; margin:15px 0; background:#ff2a2a; color:#fff; padding:10px 22px; text-decoration:none; border-radius:4px; font-weight:bold; }
+        .edit-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+        .edit-bar input, .edit-bar select { padding:6px; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; }
+        .body[contenteditable] { outline:1px dashed #38bdf8; padding:8px; border-radius:4px; }
+        .btn-save { background:#22c55e; color:#000; border:0; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="header"><h1>THE WEEKLY NEWS</h1></div>
+        <a href="/" class="back">Vissza a hírportálra</a>
+        {% if mod == 'szerk' %}
+            <a href="/magazin/panel" class="back" style="background:#38bdf8;color:#000;">Admin / Vázlatok</a>
+            <a href="/magazin/import-pdf" class="back" style="background:#a855f7;">PDF import</a>
+            <a href="/magazin/panel/elesites" class="back" style="background:#fbbf24;color:#000;">Élesítés</a>
+        {% endif %}
+
+        {% if not cikkek %}
+            <div class="empty"><h3>Még nincs publikált tartalom.</h3></div>
+        {% endif %}
+
+        {% for rovat_kulcs, rovat_nev in rovatok.items() %}
+            {% set rovat_cikkek = cikkek | selectattr("category", "equalto", rovat_kulcs) | list %}
+            {% if rovat_cikkek %}
+            <div class="rovat">
+                <div class="rovat-title">{{ rovat_nev }}</div>
+                {% for cikk in rovat_cikkek %}
+                <div class="cikk">
+                    {% if mod == 'szerk' %}
+                    <form method="POST" action="/magazin/panel/save/{{ cikk.id }}" onsubmit="sync(this)">
+                        <div class="edit-bar">
+                            <input name="title" value="{{ cikk.title }}" style="flex:2;min-width:200px;">
+                            <select name="category">
+                                {% for k, v in rovatok.items() %}
+                                <option value="{{ k }}" {% if k == cikk.category %}selected{% endif %}>{{ v }}</option>
+                                {% endfor %}
+                            </select>
+                            <input name="image" placeholder="Borító kép URL" value="{{ cikk.image }}" style="flex:1;min-width:140px;">
+                            <button class="btn-save" type="submit">Mentés</button>
+                        </div>
+                        <div class="body" contenteditable="true">{{ cikk.content | safe }}</div>
+                        <input type="hidden" name="content">
+                    </form>
+                    {% else %}
+                    <h2>{{ cikk.title }}</h2>
+                    <div class="meta">{{ cikk.author }} - {{ cikk.read_time }}</div>
+                    {% if cikk.image %}<img src="{{ cikk.image }}" class="borito">{% endif %}
+                    {% if cikk.youtube %}
+                        <div class="video-container"><iframe src="https://www.youtube.com/embed/{{ cikk.youtube }}" allowfullscreen></iframe></div>
+                    {% endif %}
+                    {% if cikk.mp3 %}<audio controls src="{{ cikk.mp3 }}" style="width:100%;margin:12px 0;"></audio>{% endif %}
+                    <div class="body">{{ cikk.content | safe }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <script>
+        function sync(form){ form.querySelector('input[name=content]').value = form.querySelector('.body').innerHTML; }
+    </script>
+</body>
+</html>
+"""
+
+
+# ============================================================
+# ADMIN PANEL SABLON (GrapesJS Canva-mód + feltöltés)
+# ============================================================
 ADMIN_PANEL_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly News Szerkesztőség - Canva & Stripe Központ</title>
-    <link rel="stylesheet" href="https://unpkg.com">
-    <script src="https://unpkg.com"></script>
+    <title>Weekly News - Admin Központ</title>
+    <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
+    <script src="https://unpkg.com/grapesjs"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background: #1e293b; color: #fff; padding: 0; margin: 0; }
         .admin-wrap { max-width: 1400px; margin: 30px auto; background: #0f172a; border-radius: 8px; border: 1px solid #475569; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .tabs-header { display: flex; background: #0f172a; border-bottom: 2px solid #ff2a2a; flex-wrap: wrap; }
-        .tab-btn { background: none; border: 0; color: #cbd5e1; padding: 15px 25px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; text-transform: uppercase; }
+        .tab-btn { background: none; border: 0; color: #cbd5e1; padding: 15px 25px; font-weight: bold; cursor: pointer; font-size: 0.95rem; text-transform: uppercase; }
         .tab-btn.active { color: #ffffff; background: #ff2a2a; }
         .tab-content { padding: 30px; display: none; background: #0f172a; }
         .tab-content.active { display: block; }
@@ -141,13 +276,11 @@ ADMIN_PANEL_TEMPLATE = """
 <body>
     <div class="admin-wrap">
         <div style="background:#0f172a; padding:20px 30px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #ff2a2a; flex-wrap:wrap; gap:15px;">
-            <div style="display:flex; align-items:center; gap:20px;">
-                <img src="/logo.png" style="max-width: 220px; height: auto; display: block;">
-                <h2 style="margin:0; color:#ffffff; letter-spacing:1px; font-size:1.4rem; font-weight:900;">ADMIN KÖZPONT</h2>
-            </div>
+            <h2 style="margin:0; color:#ffffff; letter-spacing:1px; font-size:1.4rem; font-weight:900;">ADMIN KÖZPONT</h2>
             <div>
-                <a href="/magazin/panel/elesites" class="btn-action" style="background:#ff2a2a; font-size:0.95rem; padding:10px 20px; border:1px solid #ff5555;">VÁLTOZTATÁSOK ÉLESÍTÉSE</a>
-                <a href="/magazin/logout" style="color:#cbd5e1; margin-left:20px; font-size:0.95rem; text-decoration:none; font-weight:bold; text-transform:uppercase;">Kijelentkezés [X]</a>
+                <a href="/magazin/szerkeszto" class="btn-action" style="background:#38bdf8;color:#000;">Vizuális szerkesztő</a>
+                <a href="/magazin/panel/elesites" class="btn-action" style="background:#ff2a2a;">Változtatások élesítése</a>
+                <a href="/magazin/logout" style="color:#cbd5e1; margin-left:20px; font-size:0.95rem; text-decoration:none; font-weight:bold; text-transform:uppercase;">Kijelentkezés</a>
             </div>
         </div>
         <div class="tabs-header">
@@ -161,13 +294,11 @@ ADMIN_PANEL_TEMPLATE = """
                 <h4 style="color:#38bdf8; margin-top:0; margin-bottom:10px; text-transform:uppercase;">Fájl feltöltése a saját számítógépedről</h4>
                 <form action="/magazin/titkos-admin/upload-file" method="POST" enctype="multipart/form-data" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
                     <input type="file" name="file" required style="background:#0f172a; padding:8px; border:1px solid #475569; border-radius:4px; color:#fff; width:auto;">
-                    <button type="submit" class="btn-add" style="padding:10px 20px; font-size:0.9rem;">Fájl Feltöltése ➔</button>
+                    <button type="submit" class="btn-add" style="padding:10px 20px; font-size:0.9rem;">Fájl Feltöltése</button>
                 </form>
             </div>
             <table class="table-cikkek">
-                <thead>
-                    <tr><th>Cím</th><th>Rovat</th><th>Szerző</th><th>Státusz</th><th>Műveletek</th></tr>
-                </thead>
+                <thead><tr><th>Cím</th><th>Rovat</th><th>Szerző</th><th>Státusz</th><th>Műveletek</th></tr></thead>
                 <tbody>
                     {% for cikk in cikkek %}
                     <tr>
@@ -186,23 +317,15 @@ ADMIN_PANEL_TEMPLATE = """
                 <div class="f-group"><label>Cikk Címe</label><input type="text" name="title" required></div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                     <div class="f-group"><label>Szerző</label><input type="text" name="author" value="Főszerkesztő"></div>
-                    <div class="f-group">
-                        <label>Rovat</label>
-                        <select name="category">
-                            {% for k, v in rovatok_nevei.items() %}
-                            <option value="{{ k }}">{{ v }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="f-group"><label>Rovat</label>
+                        <select name="category">{% for k, v in rovatok_nevei.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
                     </div>
                 </div>
-                <div class="f-group">
-                    <div id="gjs"></div>
-                    <input type="hidden" name="content" id="hidden_content">
-                </div>
-                <div class="f-group"><label>Borítókép URL / Feltöltött fájl elérési útja</label><input type="text" name="image"></div>
+                <div class="f-group"><div id="gjs"></div><input type="hidden" name="content" id="hidden_content"></div>
+                <div class="f-group"><label>Borítókép URL</label><input type="text" name="image"></div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-                    <div class="f-group"><label>YouTube Videó ID (csak az azonosító a beágyazáshoz)</label><input type="text" name="youtube"></div>
-                    <div class="f-group"><label>MP3 Hanganyag URL (lejátszóhoz)</label><input type="url" name="mp3"></div>
+                    <div class="f-group"><label>YouTube Videó ID</label><input type="text" name="youtube"></div>
+                    <div class="f-group"><label>MP3 Hanganyag URL</label><input type="url" name="mp3"></div>
                 </div>
                 <button type="submit" class="btn-add" style="width:100%;">Cikk Mentése Vázlatként</button>
             </form>
@@ -211,7 +334,7 @@ ADMIN_PANEL_TEMPLATE = """
             <form method="POST" action="/magazin/panel/add-ad">
                 <div class="f-group"><label>Hirdetés Megnevezése</label><input type="text" name="ad_title" required></div>
                 <div class="f-group"><label>Hirdetési Banner / Kép URL</label><input type="url" name="ad_image" required></div>
-                <div class="f-group"><label>Cél URL (hova vigyen a kattintás)</label><input type="url" name="ad_url" required></div>
+                <div class="f-group"><label>Cél URL</label><input type="url" name="ad_url" required></div>
                 <button type="submit" class="btn-add">Hirdetés Mentése</button>
             </form>
         </div>
@@ -222,13 +345,7 @@ ADMIN_PANEL_TEMPLATE = """
                     {% for email, adat in felhasznalok.items() %}
                     <tr>
                         <td style="color:#fff;">{{ email }}</td>
-                        <td>
-                            {% if adat.status == 'active' %}
-                            <span style="background:#22c55e; color:#000; padding:4px 8px; border-radius:3px; font-weight:bold; font-size:0.8rem; text-transform:uppercase;">Aktív fizető</span>
-                            {% else %}
-                            <span style="background:#ef4444; color:#fff; padding:4px 8px; border-radius:3px; font-weight:bold; font-size:0.8rem; text-transform:uppercase;">Nem fizető / Lejárt</span>
-                            {% endif %}
-                        </td>
+                        <td>{% if adat.status == 'active' %}<span style="background:#22c55e;color:#000;padding:4px 8px;border-radius:3px;font-weight:bold;font-size:0.8rem;">Aktív fizető</span>{% else %}<span style="background:#ef4444;color:#fff;padding:4px 8px;border-radius:3px;font-weight:bold;font-size:0.8rem;">Nem fizető / Lejárt</span>{% endif %}</td>
                         <td style="color:#cbd5e1;">{{ adat.stripe_customer_id }}</td>
                         <td style="color:#cbd5e1;">{{ adat.last_payment }}</td>
                     </tr>
@@ -241,13 +358,11 @@ ADMIN_PANEL_TEMPLATE = """
         window.onload = function() {
             window.editor = grapesjs.init({
                 container: '#gjs', fromElement: true, height: '500px', storageManager: false,
-                blockManager: {
-                    blocks: [
-                        { id: 'section', label: 'Hasáb szakasz', category: 'Elrendezés', content: '<div style="display:flex; padding:20px; gap:20px; background:#FDFBF7;"><div style="flex:1;">Bal hasáb</div><div style="flex:1;">Jobb hasáb</div></div>' },
-                        { id: 'text', label: 'Szövegtömb', category: 'Tartalom', content: '<p style="color:#2C2C2C; font-size:1.05rem; line-height:1.8;">Írd ide a bekezdést...</p>' },
-                        { id: 'title', label: 'Címsor', category: 'Tartalom', content: '<h2 style="color:#0f172a; font-family:sans-serif;">Címsor szövege</h2>' }
-                    ]
-                }
+                blockManager: { blocks: [
+                    { id: 'section', label: 'Hasáb szakasz', category: 'Elrendezés', content: '<div style="display:flex; padding:20px; gap:20px; background:#FDFBF7;"><div style="flex:1;">Bal hasáb</div><div style="flex:1;">Jobb hasáb</div></div>' },
+                    { id: 'text', label: 'Szövegtömb', category: 'Tartalom', content: '<p style="color:#2C2C2C; font-size:1.05rem; line-height:1.8;">Írd ide a bekezdést...</p>' },
+                    { id: 'title', label: 'Címsor', category: 'Tartalom', content: '<h2 style="color:#0f172a; font-family:sans-serif;">Címsor szövege</h2>' }
+                ] }
             });
         };
         function syncEditor() { document.getElementById('hidden_content').value = window.editor.getHtml(); }
@@ -255,164 +370,257 @@ ADMIN_PANEL_TEMPLATE = """
 </body>
 </html>
 """
+
+
 # ============================================================
-# WEBDAV SEGÉDFÜGGVÉNYEK
+# ÚTVONALAK — BELÉPÉS
 # ============================================================
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def webdav_request(method, remote_path, data=None):
-    """WebDAV kérés elküldése a kDrive szerverre"""
-    url = f"{WEBDAV_URL}/{remote_path.lstrip('/')}"
-    auth = (INFOMANIAK_USER, INFOMANIAK_PASS)
-    if method == "PUT":
-        resp = requests.put(url, data=data, auth=auth)
-    elif method == "MKCOL":
-        resp = requests.request("MKCOL", url, auth=auth)
-    elif method == "PROPFIND":
-        headers = {"Depth": "0"}
-        resp = requests.request("PROPFIND", url, auth=auth, headers=headers)
-    return resp
-
-
-def ensure_remote_folder(remote_folder_path):
-    """Létrehozza a távoli mappákat, ha nincsenek meg (rekurzívan)"""
-    resp = webdav_request("PROPFIND", remote_folder_path)
-    if resp.status_code in [200, 207]:
-        return True  # már létezik
-
-    parts = remote_folder_path.strip('/').split('/')
-    current_path = ""
-    for part in parts:
-        current_path = f"{current_path}/{part}"
-        resp = webdav_request("PROPFIND", current_path)
-        if resp.status_code in [200, 207]:
-            continue  # ez a szint már létezik
-        resp = webdav_request("MKCOL", current_path)
-        if resp.status_code not in [201, 207, 405]:
-            if resp.status_code != 405:
-                print(f"WebDAV hiba mappakészítésnél: {current_path} → {resp.status_code}")
-                return False
-    return True
+@admin_bp.route('/login', methods=['GET', 'POST'])
+def admin_login():
+    if session.get("magazin_logged_in"):
+        return redirect(url_for('admin_bp.admin_panel'))
+    if request.method == "POST":
+        if request.form.get("password") == ADMIN_PASSWORD:
+            session["magazin_logged_in"] = True
+            return redirect(url_for('admin_bp.admin_panel'))
+        return '<h3 style="font-family:sans-serif;color:#ff2a2a;">Hibás jelszó! <a href="/magazin/login">Újra</a></h3>'
+    return '''
+    <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
+        <form method="POST" style="background:#1e293b; display:inline-block; padding:30px; border-radius:8px; border:1px solid #475569;">
+            <label style="display:block; margin-bottom:10px;">Szerkesztői Jelszó:</label>
+            <input type="password" name="password" style="padding:8px; background:#0f172a; color:#fff; border:1px solid #475569;"><br><br>
+            <button type="submit" style="background:#ff2a2a; color:#fff; border:0; padding:8px 15px; border-radius:4px; cursor:pointer;">Belépés</button>
+        </form>
+    </body>
+    '''
 
 
-def upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut):
-    """Fájl felküldése a kDrive WebDAV szerverre"""
-    remote_folder = os.path.dirname(felho_fajl_ut)
-    if not ensure_remote_folder(remote_folder):
-        print(f"Nem sikerült létrehozni a mappát: {remote_folder}")
-        return False
-
-    try:
-        with open(helyi_fajl_ut, 'rb') as f:
-            resp = requests.put(
-                f"{WEBDAV_URL}/{felho_fajl_ut.lstrip('/')}",
-                data=f,
-                auth=(INFOMANIAK_USER, INFOMANIAK_PASS)
-            )
-        if resp.status_code in [201, 204]:
-            return True
-        else:
-            print(f"WebDAV feltöltési hiba: {resp.status_code} - {resp.text}")
-            return False
-    except Exception as e:
-        print(f"WebDAV hiba: {e}")
-        return False
+@admin_bp.route('/logout')
+def admin_logout():
+    session["magazin_logged_in"] = False
+    return redirect(url_for('admin_bp.admin_panel'))
 
 
-def extract_txt_from_pdf_pure(pdf_path):
-    """Egyszerű szövegkinyerés PDF-ből (regex alapú)"""
-    txt_content = []
-    try:
-        with open(pdf_path, 'rb') as f:
-            content = f.read()
-            strings = re.findall(b'BT(.*?)ET', content, re.DOTALL)
-            for s in strings:
-                text_segments = re.findall(b'\((.*?)\)', s)
-                for seg in text_segments:
-                    try:
-                        decoded = seg.decode('utf-8', errors='ignore')
-                        if decoded.strip():
-                            txt_content.append(decoded.strip())
-                    except:
-                        pass
-        return " ".join(txt_content) if txt_content else "A PDF szövege beolvasva, de nem tartalmazott kinyerhető szöveget."
-    except Exception as e:
-        return f"[Hiba a PDF olvasása során: {str(e)}]"
-        # ============================================================
-# FLASK ÚTVONAL – FÁJLFELTÖLTÉS A KDRIVE-BA
 # ============================================================
+# ÚTVONALAK — ADMIN PANEL
+# ============================================================
+@admin_bp.route('/panel')
+def admin_panel():
+    if not session.get("magazin_logged_in"):
+        return redirect(url_for('admin_bp.admin_login'))
+    cfg = load_config()
+    return render_template_string(
+        ADMIN_PANEL_TEMPLATE,
+        cikkek=cfg.get("magazin_cikkek", []),
+        rovatok_nevei=ROVATOK_MAP,
+        felhasznalok=cfg.get("felhasznalok", {})
+    )
 
+
+@admin_bp.route('/panel/add-cikk', methods=['POST'])
+def admin_add_cikk():
+    if not session.get("magazin_logged_in"):
+        return "Letiltva", 403
+    cfg = load_config()
+    uj_id = max([c["id"] for c in cfg["magazin_cikkek"]], default=0) + 1
+    cfg["magazin_cikkek"].append({
+        "id": uj_id,
+        "title": request.form.get("title", "Névtelen cikk"),
+        "category": request.form.get("category", "news"),
+        "author": request.form.get("author", "Ismeretlen"),
+        "read_time": "1 perc",
+        "content": request.form.get("content", ""),
+        "youtube": request.form.get("youtube", ""),
+        "mp3": request.form.get("mp3", ""),
+        "image": request.form.get("image", ""),
+        "published": False
+    })
+    save_config(cfg)
+    return redirect(url_for('admin_bp.admin_panel'))
+
+
+@admin_bp.route('/panel/delete/<int:cikk_id>')
+def admin_delete_cikk(cikk_id):
+    if not session.get("magazin_logged_in"):
+        return "Letiltva", 403
+    cfg = load_config()
+    cfg["magazin_cikkek"] = [c for c in cfg["magazin_cikkek"] if c["id"] != cikk_id]
+    save_config(cfg)
+    return redirect(url_for('admin_bp.admin_panel'))
+
+
+@admin_bp.route('/panel/add-ad', methods=['POST'])
+def admin_add_ad():
+    if not session.get("magazin_logged_in"):
+        return "Letiltva", 403
+    cfg = load_config()
+    cfg.setdefault("magazin_ads", []).append({
+        "title": request.form.get("ad_title", ""),
+        "image": request.form.get("ad_image", ""),
+        "url": request.form.get("ad_url", "")
+    })
+    save_config(cfg)
+    return redirect(url_for('admin_bp.admin_panel'))
+
+
+@admin_bp.route('/panel/elesites')
+def admin_elesites():
+    if not session.get("magazin_logged_in"):
+        return "Letiltva", 403
+    cfg = load_config()
+    for cikk in cfg["magazin_cikkek"]:
+        cikk["published"] = True
+    save_config(cfg)
+    return '''
+    <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
+        <h3 style="color:#4ade80;">Összes változtatás élesítve!</h3>
+        <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold;">Vissza a pultra</a>
+    </body>
+    '''
+
+
+@admin_bp.route('/panel/save/<int:cikk_id>', methods=['POST'])
+def panel_save(cikk_id):
+    if not session.get("magazin_logged_in"):
+        return "Letiltva", 403
+    cfg = load_config()
+    for cikk in cfg["magazin_cikkek"]:
+        if cikk["id"] == cikk_id:
+            cikk["title"] = request.form.get("title", cikk["title"])
+            cikk["category"] = request.form.get("category", cikk["category"])
+            cikk["image"] = request.form.get("image", cikk["image"])
+            cikk["content"] = request.form.get("content", cikk["content"])
+            break
+    save_config(cfg)
+    return redirect(url_for('admin_bp.szerkeszto'))
+
+
+# ============================================================
+# ÚTVONALAK — OLVASÓ + VIZUÁLIS SZERKESZTŐ
+# ============================================================
+@admin_bp.route('/olvaso')
+def olvaso():
+    cfg = load_config()
+    publikaltak = [c for c in cfg.get("magazin_cikkek", []) if c.get("published")]
+    return render_template_string(MAGAZIN_TEMPLATE, cikkek=publikaltak, rovatok=ROVATOK_MAP, mod='olvaso')
+
+
+@admin_bp.route('/szerkeszto')
+def szerkeszto():
+    if not session.get("magazin_logged_in"):
+        return redirect(url_for('admin_bp.admin_login'))
+    cfg = load_config()
+    return render_template_string(MAGAZIN_TEMPLATE, cikkek=cfg.get("magazin_cikkek", []), rovatok=ROVATOK_MAP, mod='szerk')
+
+
+# ============================================================
+# ÚTVONAL — FÁJLFELTÖLTÉS A KDRIVE-BA (WebDAV)
+# ============================================================
 @admin_bp.route('/titkos-admin/upload-file', methods=['POST'])
 def admin_upload_file():
     if not session.get("magazin_logged_in"):
         return "Letiltva", 403
-
     if 'file' not in request.files:
         return "Nincs fájl a kérésben", 400
-
     uploaded_file = request.files['file']
     if uploaded_file.filename == '':
         return "Nincs kiválasztott fájl", 400
+    if not allowed_file(uploaded_file.filename):
+        return "Nem támogatott fájlformátum! Csak .jpg, .jpeg vagy .pdf tölthető fel.", 400
 
-    if uploaded_file and allowed_file(uploaded_file.filename):
-        filename = secure_filename(uploaded_file.filename)
-        ext = filename.rsplit('.', 1)[1].lower()
+    filename = secure_filename(uploaded_file.filename)
+    mai_datum = datetime.datetime.now()
+    idokiiratas = mai_datum.strftime('%Y-%m')
+    het_szama = mai_datum.isocalendar()[1]
 
-        mai_datum = datetime.datetime.now()
-        idokiiratas = mai_datum.strftime('%Y-%m')
-        het_szama = mai_datum.isocalendar()[1]
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    vegleges_fajlnev = mai_datum.strftime('%H%M%S_') + filename
+    helyi_fajl_ut = os.path.join(UPLOAD_FOLDER, vegleges_fajlnev)
+    uploaded_file.save(helyi_fajl_ut)
 
-        if not os.path.exists(UPLOAD_FOLDER):
-            os.makedirs(UPLOAD_FOLDER)
-        unique_prefix = mai_datum.strftime('%H%M%S_')
-        vegleges_fajlnev = unique_prefix + filename
-        helyi_fajl_ut = os.path.join(UPLOAD_FOLDER, vegleges_fajlnev)
-        uploaded_file.save(helyi_fajl_ut)
+    felho_fajl_ut = f"archivum/{idokiiratas}/{het_szama}_het/{vegleges_fajlnev}"
+    sikeres = upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut)
 
-        felho_mappa_ut = f"archivum/{idokiiratas}/{het_szama}_het"
-        felho_fajl_ut = f"{felho_mappa_ut}/{vegleges_fajlnev}"
+    if os.path.exists(helyi_fajl_ut):
+        os.remove(helyi_fajl_ut)
 
-        # PDF szövegkinyerés MEGELŐZŐLEG, mielőtt törölnénk a helyi fájlt
-        kinyert_szoveg = ""
-        if ext == 'pdf':
-            kinyert_szoveg = extract_txt_from_pdf_pure(helyi_fajl_ut)
-
-        sikeres_mentes = upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut)
-
-        if os.path.exists(helyi_fajl_ut):
-            os.remove(helyi_fajl_ut)
-
-        if not sikeres_mentes:
-            return '''
-            <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding:40px;">
-                <h3 style="color:#ff2a2a;">HIBA A FELTÖLTÉSNÉL!</h3>
-                <p>Ellenőrizd a kDrive ID-t és az alkalmazási jelszót.</p>
-                <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold;">Vissza a pultra</a>
-            </body>
-            ''', 500
-
-        if ext == 'pdf':
-            return f'''
-            <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding:40px;">
-                <h3 style="color:#38bdf8;">PDF SIKERESEN FELTÖLTVE A KDRIVE-BA!</h3>
-                <p>Archívum helye: <b style="color:#ff2a2a;">{idokiiratas} / {het_szama}. hét</b></p>
-                <div style="max-width:800px; margin:20px auto; background:#1e293b; padding:20px; border-radius:6px; text-align:left; max-height:250px; overflow-y:auto; border:1px solid #475569;">
-                    <p style="margin:0; line-height:1.6; color:#cbd5e1;">{kinyert_szoveg}</p>
-                </div>
-                <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase;">Vissza a pultra</a>
-            </body>
-            '''
-
-        return f'''
-        <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
-            <h3 style="color:#38bdf8;">Sikeres képfeltöltés a kDrive-be!</h3>
-            <p>Mentési hely: <b>{idokiiratas} / {het_szama}. hét</b></p>
-            <p>Fájl: <b>{vegleges_fajlnev}</b></p>
-            <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase;">Vissza a pultra</a>
+    if not sikeres:
+        return '''
+        <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding:40px;">
+            <h3 style="color:#ff2a2a;">HIBA A FELTÖLTÉSNÉL!</h3>
+            <p>Ellenőrizd a kDrive ID-t és az alkalmazási jelszót.</p>
+            <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold;">Vissza a pultra</a>
         </body>
-        '''
+        ''', 500
 
-    return "Nem támogatott fájlformátum! Csak .jpg, .jpeg vagy .pdf tölthető fel.", 400
+    return f'''
+    <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
+        <h3 style="color:#38bdf8;">Sikeres feltöltés a kDrive-ba!</h3>
+        <p>Mentési hely: <b>{idokiiratas} / {het_szama}. hét</b></p>
+        <p>Fájl: <b>{vegleges_fajlnev}</b></p>
+        <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase;">Vissza a pultra</a>
+    </body>
+    '''
+
+
+# ============================================================
+# ÚTVONAL — PDF MOTOR (PDF -> Word -> HTML -> szerkeszthető cikk)
+# ============================================================
+@admin_bp.route('/import-pdf')
+def import_pdf_form():
+    if not session.get("magazin_logged_in"):
+        return "Letiltva", 403
+    return '''
+    <body style="font-family:sans-serif;background:#0f172a;color:#fff;text-align:center;padding-top:80px;">
+      <form method="POST" action="/magazin/import-pdf" enctype="multipart/form-data"
+            style="background:#1e293b;display:inline-block;padding:30px;border-radius:8px;border:1px solid #475569;">
+        <p>Válassz PDF-et — a motor átalakítja szerkeszthető cikké (elrendezéssel, képekkel):</p>
+        <input type="file" name="file" accept="application/pdf" required>
+        <br><br><button type="submit" style="background:#a855f7;color:#fff;border:0;padding:8px 16px;border-radius:4px;">Importálás</button>
+      </form>
+      <br><a href="/magazin/szerkeszto" style="color:#38bdf8;">Vissza a szerkesztőbe</a>
+    </body>
+    '''
+
+
+@admin_bp.route('/import-pdf', methods=['POST'])
+def import_pdf_do():
+    if not session.get("magazin_logged_in"):
+        return "Letiltva", 403
+    f = request.files.get('file')
+    if not f or f.filename == '':
+        return "Nincs fájl", 400
+    if not allowed_file(f.filename):
+        return "Csak PDF tölthető fel!", 400
+
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    pdf_ut = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
+    f.save(pdf_ut)
+
+    try:
+        from pdf2docx import Converter
+        docx_ut = pdf_ut.rsplit('.', 1)[0] + ".docx"
+        cv = Converter(pdf_ut)
+        cv.convert(docx_ut)
+        cv.close()
+    except Exception as e:
+        return f"PDF átalakítási hiba: {e}", 500
+
+    try:
+        import mammoth
+        with open(docx_ut, "rb") as fh:
+            html = mammoth.convert_to_html(fh).value
+    except Exception as e:
+        html = f"<p>[A Word-fájl HTML-lé alakítása nem sikerült: {e}]</p>"
+
+    cfg = load_config()
+    uj_id = max([c["id"] for c in cfg["magazin_cikkek"]], default=0) + 1
+    cfg["magazin_cikkek"].append({
+        "id": uj_id,
+        "title": f"Importált: {secure_filename(f.filename)}",
+        "category": "news",
+        "author": "PDF import",
+        "read_time": "1 perc",
+        "content": html,
