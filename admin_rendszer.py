@@ -548,8 +548,11 @@ def szerkeszto():
 # ============================================================
 # ÚTVONAL — FÁJLFELTÖLTÉS A KDRIVE-BA (WebDAV)
 # ============================================================
-@admin_bp.route('/titkos-admin/upload-file', methods=['POST'])
+@admin_bp.route('/titkos-admin/upload-file', methods=['GET', 'POST'])
 def admin_upload_file():
+    if request.method == 'GET':
+        return render_template('admin_panel.html')
+        
     if not session.get("magazin_logged_in"):
         return "Letiltva", 403
     if 'file' not in request.files:
@@ -558,8 +561,10 @@ def admin_upload_file():
     if uploaded_file.filename == '':
         return "Nincs kiválasztott fájl", 400
     if not allowed_file(uploaded_file.filename):
-        return "Nem támogatott fájlformátum! Csak .jpg, .jpeg vagy .pdf tölthető fel.", 400
+        return "Nem támogatott fájlformátum! Csupán .jpg, .jpeg vagy .pdf tölthető fel.", 400
 
+    from watchlist import secure_filename
+    import datetime
     filename = secure_filename(uploaded_file.filename)
     mai_datum = datetime.datetime.now()
     idokiiratas = mai_datum.strftime('%Y-%m')
@@ -571,8 +576,8 @@ def admin_upload_file():
     helyi_fajl_ut = os.path.join(UPLOAD_FOLDER, vegleges_fajlnev)
     uploaded_file.save(helyi_fajl_ut)
 
-    felho_fajl_ut = f"archivum/{idokiiratas}/{het_szama}_het/{vegleges_fajlnev}"
-    sikeres = upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut)
+    # Feltöltés az új Infomaniak kDrive REST API-n keresztül
+    sikeres = kdrive_api_upload(helyi_fajl_ut, vegleges_fajlnev)
 
     if os.path.exists(helyi_fajl_ut):
         os.remove(helyi_fajl_ut)
@@ -582,16 +587,16 @@ def admin_upload_file():
         <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding:40px;">
             <h3 style="color:#ff2a2a;">HIBA A FELTÖLTÉSNÉL!</h3>
             <p>Ellenőrizd a kDrive ID-t és az alkalmazási jelszót.</p>
-            <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold;">Vissza a pultra</a>
+            <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px;">Vissza a pultra</a>
         </body>
         ''', 500
 
     return f'''
     <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
         <h3 style="color:#38bdf8;">Sikeres feltöltés a kDrive-ba!</h3>
-        <p>Mentési hely: <b>{idokiiratas} / {het_szama}. hét</b></p>
+        <p>Mentési hely: <b>archivum/{idokiiratas}/{het_szama}_het</b></p>
         <p>Fájl: <b>{vegleges_fajlnev}</b></p>
-        <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase;">Vissza a pultra</a>
+        <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px;">Vissza a pultra</a>
     </body>
     '''
 
