@@ -105,7 +105,7 @@ def kdrive_api_upload(local_file_path, filename):
             }
             response = requests.post(url, headers=headers, files=files)
             
-        if response.status_code in:
+        if response.status_code == 200 or response.status_code == 201:
             return True
         else:
             print(f"kDrive API hiba: {response.status_code} - {response.text}")
