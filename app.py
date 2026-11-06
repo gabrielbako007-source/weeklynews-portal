@@ -308,7 +308,7 @@ HTML_TEMPLATE = """
         <div class="center-news-stream">
             <div class="main-magazine-cover">
                 <!-- EGYETLEN NAGY KÖZÖS LINK A TELJES BORÍTÓRA: BÁRHOVA KATTINTANAK, ÁTVISZ A 2. RENDSZERBE -->
-                <a href="/magazin/olvaso" target="_blank" style="display: block; width: 100%; height: auto; text-decoration: none;">
+                <a href="/magazin" target="_blank" style="display: block; width: 100%; height: auto; text-decoration: none;">
                     <img src="/friss_magazin.jpg" alt="The Weekly News Címlap" style="width: 100%; height: auto; display: block;">
                 </a>
             </div>
