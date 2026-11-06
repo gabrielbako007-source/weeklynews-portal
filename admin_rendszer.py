@@ -83,7 +83,7 @@ def kuldo_infomaniak_email(hova, targy, szoveg):
 # ==============================================================================
 # INFOMANIAK kDrive REST API BEÁLLÍTÁSOK
 # ==============================================================================
-INFOMANIAK_TOKEN = os.environ.get("INFOMANIAK_PASS", "vNJsYe7qknd4NvRe")
+INFOMANIAK_TOKEN = os.environ.get("INFOMANIAK_PASS", "SMZTndtrZ4TDFZaX")
 KDRIVE_ID = "2469838"
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'pdf'}
 
@@ -94,7 +94,7 @@ def kdrive_api_upload(local_file_path, filename):
     """Fájl feltöltése kDrive-ra az Infomaniak REST API-n keresztül"""
     url = "https://api.infomaniak.com/2/drive/654321/files/upload"
     headers = {
-        "Authorization": "Bearer WeeklyNews"
+        "Authorization": "Basic SMZTndtrZ4TDFZaX"
     }
     
     try:
@@ -566,7 +566,7 @@ def admin_upload_file():
     if uploaded_file.filename == '':
         return "Nincs kiválasztott fájl", 400
     if not allowed_file(uploaded_file.filename):
-        return "Nem támogatott fájlformátum! Csupán .jpg, .jpeg vagy .pdf tölthető fel.", 400
+        return "Nem támogatott fájlformátum! Csupán .jpg, .png, .jpeg vagy .pdf tölthető fel.", 400
 
     filename = secure_filename(uploaded_file.filename)
     mai_datum = datetime.datetime.now()
