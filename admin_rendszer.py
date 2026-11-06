@@ -101,7 +101,7 @@ def kdrive_api_upload(helyi_fajl_ut, vegleges_fajlnev):
         import requests
         with open(helyi_fajl_ut, 'rb') as f:
             files = {
-                'file': (filename, f)
+                'file': (vegleges_fajlnev, f)
             }
             response = requests.post(url, headers=headers, files=files)
             
