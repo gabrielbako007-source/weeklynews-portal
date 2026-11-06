@@ -80,7 +80,6 @@ def kuldo_infomaniak_email(hova, targy, szoveg):
     except Exception:
         return False
 
-
 # ==============================================================================
 # INFOMANIAK kDrive REST API BEÁLLÍTÁSOK
 # ==============================================================================
@@ -99,6 +98,7 @@ def kdrive_api_upload(local_file_path, filename):
     }
     
     try:
+        import requests
         with open(local_file_path, 'rb') as f:
             files = {
                 'file': (filename, f)
@@ -113,6 +113,7 @@ def kdrive_api_upload(local_file_path, filename):
     except Exception as e:
         print(f"Feltöltési hiba: {str(e)}")
         return False
+
 
 
 def ensure_remote_folder(remote_folder_path):
