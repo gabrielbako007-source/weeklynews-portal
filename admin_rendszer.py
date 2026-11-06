@@ -90,7 +90,7 @@ ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'pdf'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def kdrive_api_upload(local_file_path, filename):
+def kdrive_api_upload(helyi_fajl_ut, vegleges_fajlnev):
     """Fájl feltöltése kDrive-ra az Infomaniak REST API-n keresztül"""
     url = "https://api.infomaniak.com/2/drive/654321/files/upload"
     headers = {
@@ -99,7 +99,7 @@ def kdrive_api_upload(local_file_path, filename):
     
     try:
         import requests
-        with open(local_file_path, 'rb') as f:
+        with open(helyi_fajl_ut, 'rb') as f:
             files = {
                 'file': (filename, f)
             }
