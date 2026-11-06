@@ -152,7 +152,7 @@ MAGAZIN_TEMPLATE = """
     <title>The Weekly News</title>
     <style>
         /* Törtfehér publikálási oldalalap */
-        body { font-family:'Arial',sans-serif; margin:0; background:#FDFBF7; color:#1e293b; }
+        body { font-family:'Arial',sans-serif; margin:0; background:#27313e; color:#ffffff; }
         .wrap { max-width:1200px; margin:0 auto; padding:20px; }
         
         /* Megnövelt, szélesebb sötétkék fejléc a logó kényelmes elhelyezéséhez */
@@ -170,7 +170,7 @@ MAGAZIN_TEMPLATE = """
         /* Tartalmi elemek stílusai */
         .rovat { margin:50px 0; scroll-margin-top:140px; }
         .rovat-title { font-size:1.6rem; font-weight:900; color:#0f172a; border-bottom:3px solid #ff2a2a; padding-bottom:6px; text-transform:uppercase; }
-        .cikk { background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:30px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05); }
+        .cikk { background:#1e2530; border:1px solid #384556; border-radius:8px; padding:30px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
         .cikk h2 { color:#0f172a; margin-top:0; }
         .cikk .body { color:#334155; line-height:1.8; font-size:1.1rem; }
         .empty { text-align:center; color:#64748b; padding:80px 20px; font-style: italic; }
