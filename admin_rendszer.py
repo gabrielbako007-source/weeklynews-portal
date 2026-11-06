@@ -94,7 +94,7 @@ def kdrive_api_upload(local_file_path, filename):
     """Fájl feltöltése kDrive-ra az Infomaniak REST API-n keresztül"""
     url = "https://api.infomaniak.com/2/drive/654321/files/upload"
     headers = {
-        "Authorization": "Basic SMZTndtrZ4TDFZaX"
+        "Authorization": "Bearer WeeklyNews"
     }
     
     try:
