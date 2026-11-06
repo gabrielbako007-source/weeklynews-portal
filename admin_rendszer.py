@@ -81,30 +81,38 @@ def kuldo_infomaniak_email(hova, targy, szoveg):
         return False
 
 
-# ============================================================
-# INFOMANIAK kDrive WEBDAV
-# ============================================================
-INFOMANIAK_USER = os.environ.get("INFOMANIAK_USER", "infotwn@etik.com")
-INFOMANIAK_PASS = os.environ.get("INFOMANIAK_PASS", "")
+# ==============================================================================
+# INFOMANIAK kDrive REST API BEÁLLÍTÁSOK
+# ==============================================================================
+INFOMANIAK_TOKEN = os.environ.get("INFOMANIAK_PASS", "vNJsYe7qknd4NvRe")
 KDRIVE_ID = "2469838"
-WEBDAV_URL = f"https://{KDRIVE_ID}.connect.kdrive.infomaniak.com"
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'pdf'}
-
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'pdf'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-def webdav_request(method, remote_path, data=None):
-    url = f"{WEBDAV_URL}/{remote_path.lstrip('/')}"
-    auth = (INFOMANIAK_USER, INFOMANIAK_PASS)
-    if method == "PUT":
-        return requests.put(url, data=data, auth=auth)
-    if method == "MKCOL":
-        return requests.request("MKCOL", url, auth=auth)
-    if method == "PROPFIND":
-        return requests.request("PROPFIND", url, auth=auth, headers={"Depth": "0"})
-    return None
+def kdrive_api_upload(local_file_path, filename):
+    """Fájl feltöltése kDrive-ra az Infomaniak REST API-n keresztül"""
+    url = f"https://infomaniak.com{KDRIVE_ID}/upload"
+    headers = {
+        "Authorization": f"Bearer {INFOMANIAK_TOKEN}"
+    }
+    
+    try:
+        with open(local_file_path, 'rb') as f:
+            files = {
+                'file': (filename, f)
+            }
+            response = requests.post(url, headers=headers, files=files)
+            
+        if response.status_code in:
+            return True
+        else:
+            print(f"kDrive API hiba: {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"Feltöltési hiba: {str(e)}")
+        return False
 
 
 def ensure_remote_folder(remote_folder_path):
