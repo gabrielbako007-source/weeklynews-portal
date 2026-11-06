@@ -151,31 +151,54 @@ MAGAZIN_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Weekly News</title>
     <style>
-        body { font-family:'Arial',sans-serif; margin:0; background:#1e293b; color:#fff; }
-        .wrap { max-width:900px; margin:0 auto; padding:20px; }
-        .header { text-align:center; padding:30px 10px; border-bottom:3px solid #ff2a2a; }
-        .header h1 { margin:0; letter-spacing:2px; }
-        .rovat { margin:40px 0; }
-        .rovat-title { font-size:1.5rem; font-weight:900; color:#38bdf8; border-bottom:3px solid #38bdf8; padding-bottom:8px; text-transform:uppercase; }
-        .cikk { background:#0f172a; border:1px solid #475569; border-radius:8px; padding:25px; margin:20px 0; }
-        .cikk h2 { color:#fff; margin-top:0; }
-        .cikk .meta { color:#94a3b8; font-size:0.85rem; margin-bottom:12px; }
-        .cikk .borito { width:100%; border-radius:6px; margin-bottom:12px; }
-        .cikk .body { color:#cbd5e1; line-height:1.8; font-size:1.05rem; }
-        .video-container { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; margin:12px 0; border-radius:6px; }
-        .video-container iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
-        .empty { text-align:center; color:#94a3b8; padding:60px 20px; }
-        .back { display:inline-block; margin:15px 0; background:#ff2a2a; color:#fff; padding:10px 22px; text-decoration:none; border-radius:4px; font-weight:bold; }
-        .edit-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
-        .edit-bar input, .edit-bar select { padding:6px; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; }
-        .body[contenteditable] { outline:1px dashed #38bdf8; padding:8px; border-radius:4px; }
-        .btn-save { background:#22c55e; color:#000; border:0; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer; }
+        /* Törtfehér publikálási oldalalap */
+        body { font-family:'Arial',sans-serif; margin:0; background:#FDFBF7; color:#1e293b; }
+        .wrap { max-width:1200px; margin:0 auto; padding:20px; }
+        
+        /* Megnövelt, szélesebb sötétkék fejléc a logó kényelmes elhelyezéséhez */
+        .header-bg { background:#0f172a; border-bottom:3px solid #ff2a2a; padding:25px 0; width:100%; box-sizing: border-box; }
+        .header-container { max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; padding:0 30px; flex-wrap:wrap; gap: 20px; }
+        
+        /* A GitHubon lévő twn_logo.png pontos, fix méretezése */
+        .header-logo { max-width:320px; width: 100%; height:auto; display:block; }
+        
+        /* Rovat-felsorolások a fejléc jobb oldalán */
+        .rovat-nav { display:flex; gap:12px; flex-wrap:wrap; align-items: center; }
+        .rovat-link { color:#cbd5e1; font-weight:bold; text-decoration:none; text-transform:uppercase; font-size:0.85rem; padding:8px 12px; border-radius:4px; transition:0.2s; }
+        .rovat-link:hover { color:#fff; background:#ff2a2a; }
+        
+        /* Tartalmi elemek stílusai */
+        .rovat { margin:50px 0; scroll-margin-top:140px; }
+        .rovat-title { font-size:1.6rem; font-weight:900; color:#0f172a; border-bottom:3px solid #ff2a2a; padding-bottom:6px; text-transform:uppercase; }
+        .cikk { background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:30px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05); }
+        .cikk h2 { color:#0f172a; margin-top:0; }
+        .cikk .body { color:#334155; line-height:1.8; font-size:1.1rem; }
+        .empty { text-align:center; color:#64748b; padding:80px 20px; font-style: italic; }
+        .back { display:inline-block; margin:15px 5px; background:#0f172a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase; font-size:0.85rem; }
+        .edit-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px; background:#f1f5f9; padding:10px; border-radius:6px; }
+        .edit-bar input, .edit-bar select { padding:8px; background:#fff; color:#000; border:1px solid #cbd5e1; border-radius:4px; }
+        .body[contenteditable] { outline:2px dashed #38bdf8; padding:15px; border-radius:4px; background:#fff; color:#000; }
+        .btn-save { background:#22c55e; color:#fff; border:0; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer; text-transform:uppercase; }
     </style>
 </head>
 <body>
+    <!-- Szélesített sötétkék fejrész a bal oldali grafikus logóval és a felsorolásokkal -->
+    <div class="header-bg">
+        <div class="header-container">
+            <a href="/"><img src="/twn_logo.png" class="header-logo" alt="THE WEEKLY TWN NEWS"></a>
+            <div class="rovat-nav">
+                <a href="#news" class="rovat-link">News</a>
+                <a href="#hit_csalad_erkolcs" class="rovat-link">Hit, Család & Erkölcs</a>
+                <a href="#egeszseg" class="rovat-link">Egészség</a>
+                <a href="#media" class="rovat-link">Média (Video & Podcast)</a>
+                <a href="#tech_tudomany" class="rovat-link">Tech-Tudomány</a>
+                <a href="#ajanlo_hirdetes" class="rovat-link">Ajánló & Hirdetés</a>
+            </div>
+        </div>
+    </div>
     <div class="wrap">
-        <div class="header"><h1>THE WEEKLY NEWS</h1></div>
-        <a href="/" class="back">Vissza a hírportálra</a>
+        <div style="margin-top:10px;">
+            <a href="/" class="back">⬅ Vissza a hírportálra</a>
         {% if mod == 'szerk' %}
             <a href="/magazin/panel" class="back" style="background:#38bdf8;color:#000;">Admin / Vázlatok</a>
             <a href="/magazin/import-pdf" class="back" style="background:#a855f7;">PDF import</a>
