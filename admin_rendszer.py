@@ -15,7 +15,7 @@ from werkzeug.utils import secure_filename
 admin_bp = Blueprint('admin_bp', __name__, url_prefix='/magazin')
 
 CONFIG_FILE = "twn_config.json"
-ADMIN_PASSWORD = "twnadmin2026"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "twnadmin2026")
 UPLOAD_FOLDER = 'uploads'
 
 ROVATOK_MAP = {
@@ -83,70 +83,50 @@ def kuldo_infomaniak_email(hova, targy, szoveg):
 # ==============================================================================
 # INFOMANIAK kDrive REST API BEÁLLÍTÁSOK
 # ==============================================================================
-INFOMANIAK_TOKEN = os.environ.get("INFOMANIAK_PASS", "SMZTndtrZ4TDFZaX")
-KDRIVE_ID = "2469838"
+KDRIVE_ID = os.environ.get("KDRIVE_ID", "2469838")
+KDRIVE_API_TOKEN = os.environ.get("INFOMANIAK_API_TOKEN", "")
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'pdf'}
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def kdrive_api_upload(helyi_fajl_ut, vegleges_fajlnev):
-    """Fájl feltöltése kDrive-ra az Infomaniak REST API-n keresztül"""
-    url = "https://api.infomaniak.com/2/drive/654321/files/upload"
+
+def kdrive_api_upload(helyi_fajl_ut, vegleges_fajlnev, cel_mappa="/"):
+    """Fájl feltöltése kDrive-ra az Infomaniak REST API-n keresztül.
+    
+    Visszatér: (sikeres: bool, hiba_uzenet: str)
+    """
+    if not KDRIVE_API_TOKEN:
+        return False, "Nincs beállítva az INFOMANIAK_API_TOKEN environment változó a Render-en."
+    
+    url = f"https://api.infomaniak.com/2/drive/{KDRIVE_ID}/files/upload"
     headers = {
-        "Authorization": "Bearer lD3uatw-t6CUmy0AKm8JE-f7-buGlt1yqE5GrBZet27kQZhMjpkXKZ1e--kISDMydWV1m1i_ROVJAj-2"
+        "Authorization": f"Bearer {KDRIVE_API_TOKEN}"
     }
     
     try:
-        import requests
         with open(helyi_fajl_ut, 'rb') as f:
             files = {
                 'file': (vegleges_fajlnev, f)
             }
-            response = requests.post(url, headers=headers, files=files)
-            
-        if response.status_code == 200 or response.status_code == 201:
-            return True
+            data = {
+                'path': cel_mappa
+            }
+            response = requests.post(url, headers=headers, files=files, data=data, timeout=60)
+        
+        if response.status_code in [200, 201]:
+            return True, "Sikeres feltöltés"
         else:
-            print(f"kDrive API hiba: {response.status_code} - {response.text}")
-            return False
+            hiba_uzenet = f"API hiba ({response.status_code}): {response.text[:300]}"
+            print(f"kDrive API hiba: {hiba_uzenet}")
+            return False, hiba_uzenet
+    except requests.exceptions.ConnectionError as e:
+        return False, f"Kapcsolódási hiba a kDrive szerverhez: {str(e)}"
+    except requests.exceptions.Timeout:
+        return False, "Időtúllépés a kDrive API hívásnál."
     except Exception as e:
-        print(f"Feltöltési hiba: {str(e)}")
-        return False
-
-
-
-def ensure_remote_folder(remote_folder_path):
-    resp = webdav_request("PROPFIND", remote_folder_path)
-    if resp is not None and resp.status_code in [200, 207]:
-        return True
-    parts = remote_folder_path.strip('/').split('/')
-    current_path = ""
-    for part in parts:
-        current_path = f"{current_path}/{part}"
-        resp = webdav_request("PROPFIND", current_path)
-        if resp is not None and resp.status_code in [200, 207]:
-            continue
-        resp = webdav_request("MKCOL", current_path)
-        if resp is not None and resp.status_code not in [201, 207, 405]:
-            print(f"WebDAV hiba mappakészítésnél: {current_path} -> {resp.status_code}")
-            return False
-    return True
-
-
-def upload_to_infomaniak_felho(helyi_fajl_ut, felho_fajl_ut):
-    remote_folder = os.path.dirname(felho_fajl_ut)
-    if not ensure_remote_folder(remote_folder):
-        print(f"Nem sikerült létrehozni a mappát: {remote_folder}")
-        return False
-    try:
-        with open(helyi_fajl_ut, 'rb') as f:
-            resp = requests.put(f"{WEBDAV_URL}/{felho_fajl_ut.lstrip('/')}",
-                                data=f, auth=(INFOMANIAK_USER, INFOMANIAK_PASS))
-        return resp.status_code in [201, 204]
-    except Exception as e:
-        print(f"WebDAV hiba: {e}")
-        return False
+        return False, f"Feltöltési hiba: {str(e)}"
 
 
 # ============================================================
@@ -182,6 +162,10 @@ MAGAZIN_TEMPLATE = """
         .cikk { background:#1e2530; border:1px solid #384556; border-radius:8px; padding:30px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
         .cikk h2 { color:#0f172a; margin-top:0; }
         .cikk .body { color:#334155; line-height:1.8; font-size:1.1rem; }
+        .cikk .meta { color:#94a3b8; font-size:0.9rem; margin-bottom:10px; }
+        .cikk .borito { width:100%; border-radius:6px; margin:15px 0; }
+        .cikk .video-container { position:relative; padding-bottom:56.25%; height:0; margin:15px 0; border-radius:6px; overflow:hidden; }
+        .cikk .video-container iframe { position:absolute; top:0; left:0; width:100%; height:100%; }
         .empty { text-align:center; color:#64748b; padding:80px 20px; font-style: italic; }
         .back { display:inline-block; margin:15px 5px; background:#0f172a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; text-transform:uppercase; font-size:0.85rem; }
         .edit-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px; background:#f1f5f9; padding:10px; border-radius:6px; }
@@ -221,7 +205,7 @@ MAGAZIN_TEMPLATE = """
         {% for rovat_kulcs, rovat_nev in rovatok.items() %}
             {% set rovat_cikkek = cikkek | selectattr("category", "equalto", rovat_kulcs) | list %}
             {% if rovat_cikkek %}
-            <div class="rovat">
+            <div class="rovat" id="{{ rovat_kulcs }}">
                 <div class="rovat-title">{{ rovat_nev }}</div>
                 {% for cikk in rovat_cikkek %}
                 <div class="cikk">
@@ -323,7 +307,7 @@ ADMIN_PANEL_TEMPLATE = """
         </div>
         <div id="tab_lista" class="tab-content active">
             <div style="background: #1e293b; padding: 20px; border: 1px dashed #38bdf8; border-radius: 6px; margin-bottom: 25px;">
-                <h4 style="color:#38bdf8; margin-top:0; margin-bottom:10px; text-transform:uppercase;">Fájl feltöltése a saját számítógépedről</h4>
+                <h4 style="color:#38bdf8; margin-top:0; margin-bottom:10px; text-transform:uppercase;">Fájl feltöltése a kDrive-ba</h4>
                 <form action="/magazin/titkos-admin/upload-file" method="POST" enctype="multipart/form-data" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
                     <input type="file" name="file" required style="background:#0f172a; padding:8px; border:1px solid #475569; border-radius:4px; color:#fff; width:auto;">
                     <button type="submit" class="btn-add" style="padding:10px 20px; font-size:0.9rem;">Fájl Feltöltése</button>
@@ -546,20 +530,16 @@ def szerkeszto():
 
 
 # ============================================================
-# ÚTVONAL — FÁJLFELTÖLTÉS A KDRIVE-BA (WebDAV)
+# ÚTVONAL — FÁJLFELTÖLTÉS A KDRIVE-BA
 # ============================================================
 @admin_bp.route('/titkos-admin/upload-file', methods=['GET', 'POST'])
 def admin_upload_file():
-    import os
-    import datetime
-    from flask import request, session, render_template, redirect, url_for
-    from werkzeug.utils import secure_filename
-
-    if request.method == 'GET':
-        return render_template('admin_panel.html')
-
     if not session.get("magazin_logged_in"):
         return "Letiltva", 403
+
+    if request.method == 'GET':
+        return redirect(url_for('admin_bp.admin_panel'))
+
     if 'file' not in request.files:
         return "Nincs fájl a kérésben", 400
     uploaded_file = request.files['file']
@@ -570,43 +550,42 @@ def admin_upload_file():
 
     filename = secure_filename(uploaded_file.filename)
     mai_datum = datetime.datetime.now()
-    idokiiratas = mai_datum.strftime('%Y-%m')
-    het_szama = mai_datum.isocalendar()[1]
+    vegleges_fajlnev = mai_datum.strftime('%H%M%S_') + filename
 
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
-    vegleges_fajlnev = mai_datum.strftime('%H%M%S_') + filename
     helyi_fajl_ut = os.path.join(UPLOAD_FOLDER, vegleges_fajlnev)
     uploaded_file.save(helyi_fajl_ut)
 
-    # Feltöltés az új Infomaniak kDrive REST API-n keresztül
-    sikeres = kdrive_api_upload(helyi_fajl_ut, vegleges_fajlnev)
+    # Feltöltés kDrive-ra
+    sikeres, hiba_uzenet = kdrive_api_upload(helyi_fajl_ut, vegleges_fajlnev)
 
+    # Helyi fájl törlése (mindenképp)
     if os.path.exists(helyi_fajl_ut):
         os.remove(helyi_fajl_ut)
 
     if not sikeres:
-        return '''
+        return f'''
         <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding:40px;">
             <h3 style="color:#ff2a2a;">HIBA A FELTÖLTÉSNÉL!</h3>
-            <p>Ellenőrizd a kDrive ID-t és az alkalmazási jelszót.</p>
-            <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px;">Vissza a pultra</a>
+            <p style="max-width:600px; margin:20px auto; text-align:left; background:#1e293b; padding:15px; border-radius:6px; font-size:0.9rem;">{hiba_uzenet}</p>
+            <a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold;">Vissza a pultra</a>
         </body>
         ''', 500
 
     return f'''
     <body style="font-family:sans-serif; background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
         <h3 style="color:#38bdf8;">Sikeres feltöltés a kDrive-ba!</h3>
-        <p>Mentési hely: <b>archivum/{idokiiratas}/{het_szama}_het</b></p>
         <p>Fájl: <b>{vegleges_fajlnev}</b></p>
-        <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px;">Vissza a pultra</a>
+        <br><a href="/magazin/panel" style="background:#ff2a2a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold;">Vissza a pultra</a>
     </body>
     '''
+
 
 # ============================================================
 # ÚTVONAL — PDF MOTOR (PDF -> Word -> HTML -> szerkeszthető cikk)
 # ============================================================
-@admin_bp.route('/import-pdf')
+@admin_bp.route('/import-pdf', methods=['GET'])
 def import_pdf_form():
     if not session.get("magazin_logged_in"):
         return "Letiltva", 403
@@ -630,7 +609,7 @@ def import_pdf_do():
     f = request.files.get('file')
     if not f or f.filename == '':
         return "Nincs fájl", 400
-    if not allowed_file(f.filename):
+    if not f.filename.lower().endswith('.pdf'):
         return "Csak PDF tölthető fel!", 400
 
     if not os.path.exists(UPLOAD_FOLDER):
@@ -638,14 +617,23 @@ def import_pdf_do():
     pdf_ut = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
     f.save(pdf_ut)
 
+    docx_ut = pdf_ut.rsplit('.', 1)[0] + ".docx"
+
     try:
         from pdf2docx import Converter
-        docx_ut = pdf_ut.rsplit('.', 1)[0] + ".docx"
+        cv = Converter(pdf_ut)
+        cv.convert(docx_ut)
+        cv.close()
+    except
+    try:
+        from pdf2docx import Converter
         cv = Converter(pdf_ut)
         cv.convert(docx_ut)
         cv.close()
     except Exception as e:
-        return f"PDF átalakítási hiba: {e}", 500
+        if os.path.exists(pdf_ut):
+            os.remove(pdf_ut)
+        return f"PDF -> Word konverziós hiba: {str(e)}", 500
 
     try:
         import mammoth
@@ -663,16 +651,17 @@ def import_pdf_do():
         "author": "PDF import",
         "read_time": "1 perc",
         "content": html,
-       "youtube": "",
+        "youtube": "",
         "mp3": "",
         "image": "",
         "published": False
     })
     save_config(cfg)
 
-    # Ideiglenes fájlok takarítása a Renderről
+    # Ideiglenes fájlok takarítása
     for ut in (pdf_ut, docx_ut):
         if os.path.exists(ut):
             os.remove(ut)
 
     return redirect(url_for('admin_bp.szerkeszto'))
+    
